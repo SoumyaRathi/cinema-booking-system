@@ -1,0 +1,46 @@
+# Compiled class files
+*.class
+target/
+*.jar
+*.war
+*.ear
+
+# Log files
+*.log
+logs/
+
+# Eclipse specific files
+.classpath
+.project
+.settings/
+bin/
+
+# IntelliJ IDEA files
+.idea/
+*.iml
+*.iws
+
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+
+# Application properties with sensitive data
+# src/main/resources/application.properties
+
+# OS specific files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Package files
+*.zip
+*.tar.gz
+*.rar
+
+# Uploads folder (contains user-uploaded images)
+uploads/
+
+# Virtual machine crash logs
+hs_err_pid*
