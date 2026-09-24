@@ -1,0 +1,1227 @@
+/* Global Styles */
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+  line-height: 1.6;
+}
+
+/* Navbar Customization */
+.navbar-brand {
+  font-weight: bold;
+  font-size: 1.5rem;
+}
+
+/* Card Hover Effects */
+.card {
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Button Styles */
+.btn {
+  border-radius: 4px;
+  padding: 0.5rem 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+.btn-primary:hover {
+  background-color: #0069d9;
+  border-color: #0062cc;
+}
+
+/* Footer Styles */
+footer {
+  background-color: #343a40;
+  color: white;
+}
+
+footer a {
+  color: #f8f9fa;
+  transition: color 0.3s ease;
+}
+
+footer a:hover {
+  color: #007bff;
+  text-decoration: none;
+}
+
+/* Custom Badge Styles */
+.badge {
+  font-weight: 500;
+  padding: 0.4em 0.8em;
+}
+
+/* Form Control Styles */
+.form-control:focus {
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Movie Card Styles */
+.movie-card {
+  border-radius: 8px;
+  overflow: hidden;
+  transition: transform 0.2s;
+  margin-bottom: 20px;
+  height: 100%;
+}
+
+.movie-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.movie-card .card-img-top {
+  transition: transform 0.5s ease;
+}
+
+.movie-card:hover .card-img-top {
+  transform: scale(1.05);
+}
+
+.movie-poster {
+  height: 300px;
+  object-fit: cover;
+  border-top-left-radius: calc(0.25rem - 1px);
+  border-top-right-radius: calc(0.25rem - 1px);
+}
+
+/* Pagination Styles */
+.pagination .page-item.active .page-link {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+.pagination .page-link {
+  color: #007bff;
+}
+
+.pagination .page-link:hover {
+  color: #0056b3;
+}
+
+/* Custom Alert Styles */
+.alert {
+  border-radius: 4px;
+  border: none;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .container {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+
+  .movie-card {
+    margin-bottom: 20px;
+  }
+}
+
+/* Admin Login Styles */
+body.login-page {
+  background-color: #f8f9fa;
+}
+
+.login-container {
+  max-width: 450px;
+  margin: 100px auto;
+  padding: 30px;
+  background-color: #fff;
+  border-radius: 5px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.login-header h2 {
+  color: #343a40;
+  font-weight: 600;
+}
+
+.admin-badge {
+  background-color: #dc3545;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 3px;
+  font-size: 14px;
+  margin-left: 10px;
+}
+
+.btn-login {
+  background-color: #343a40;
+  border-color: #343a40;
+  width: 100%;
+  padding: 10px;
+  font-weight: 500;
+}
+
+.btn-login:hover {
+  background-color: #23272b;
+  border-color: #23272b;
+}
+
+.user-login-link {
+  text-align: center;
+  margin-top: 20px;
+}
+
+/* Screening Time Styles */
+.time-checkbox {
+  margin-right: 15px;
+  margin-bottom: 10px;
+}
+
+.selected-times {
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-radius: 5px;
+}
+
+.time-badge {
+  display: inline-block;
+  margin-right: 5px;
+  margin-bottom: 5px;
+  padding: 5px 10px;
+  background-color: #e9ecef;
+  border-radius: 15px;
+  font-size: 0.9rem;
+}
+
+.time-checkbox.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.time-checkbox.disabled input {
+  pointer-events: none;
+}
+
+.time-checkbox.disabled label {
+  text-decoration: line-through;
+  color: #6c757d;
+}
+
+/* Payment Details Styles */
+.payment-details-card {
+  border-radius: 5px;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  margin-bottom: 20px;
+}
+
+.payment-header {
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.payment-body {
+  padding: 20px;
+}
+
+.payment-info {
+  margin-bottom: 20px;
+}
+
+.payment-info-item {
+  margin-bottom: 10px;
+}
+
+.payment-info-label {
+  font-weight: bold;
+  color: #6c757d;
+}
+
+.payment-status {
+  font-size: 1.2rem;
+  font-weight: bold;
+  padding: 5px 10px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+.status-success {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.status-pending {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.status-failed {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.status-refunded {
+  background-color: #e2e3e5;
+  color: #383d41;
+}
+
+.booking-details {
+  background-color: #f8f9fa;
+  border-radius: 5px;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+.action-buttons {
+  margin-top: 20px;
+}
+
+/* Admin Payments Dashboard Styles */
+.stats-card {
+  border-radius: 5px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.stats-card-blue {
+  background-color: #007bff;
+  color: white;
+}
+
+.stats-card-green {
+  background-color: #28a745;
+  color: white;
+}
+
+.stats-card-yellow {
+  background-color: #ffc107;
+  color: #212529;
+}
+
+.stats-card-red {
+  background-color: #dc3545;
+  color: white;
+}
+
+.stats-icon {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+}
+
+.stats-title {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+
+.stats-value {
+  font-size: 1.8rem;
+  font-weight: bold;
+}
+
+.filter-section {
+  background-color: #f8f9fa;
+  border-radius: 5px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+/* Seat Selection Styles */
+.seat {
+  width: 35px;
+  height: 35px;
+  margin: 5px;
+  border-radius: 5px;
+  display: inline-block;
+  text-align: center;
+  line-height: 35px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.seat-available {
+  background-color: #e9ecef;
+  color: #495057;
+  border: 1px solid #ced4da;
+}
+
+.seat-selected {
+  background-color: #007bff;
+  color: white;
+  border: 1px solid #0069d9;
+}
+
+.seat-booked {
+  background-color: #dc3545;
+  color: white;
+  border: 1px solid #c82333;
+  cursor: not-allowed;
+}
+
+.screen {
+  height: 10px;
+  background-color: #343a40;
+  border-radius: 5px;
+  margin: 20px 0 40px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.7);
+}
+
+.screen-label {
+  text-align: center;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #6c757d;
+}
+
+.booking-summary {
+  position: sticky;
+  top: 20px;
+}
+
+/* Booking Confirmation Styles */
+.booking-progress {
+  display: flex;
+  margin-bottom: 2rem;
+}
+
+.booking-step {
+  flex: 1;
+  text-align: center;
+  padding: 1rem 0.5rem;
+  background-color: #f8f9fa;
+  border-right: 1px solid #fff;
+}
+
+.booking-step.active {
+  background-color: #dc3545;
+  color: white;
+}
+
+.booking-step.completed {
+  background-color: #28a745;
+  color: white;
+}
+
+.confirmation-card {
+  border: 1px solid #28a745;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.confirmation-header {
+  background-color: #28a745;
+  color: white;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.confirmation-body {
+  padding: 2rem;
+}
+
+.confirmation-code {
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  padding: 0.5rem;
+  background-color: #f8f9fa;
+  border-radius: 5px;
+}
+
+.booking-details-row {
+  display: flex;
+  margin-bottom: 0.5rem;
+}
+
+.booking-details-label {
+  width: 150px;
+  font-weight: bold;
+}
+
+.booking-details-value {
+  flex: 1;
+}
+
+/* Booking Cancellation Email Styles */
+.container-email {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.header-email {
+  background-color: #f8f9fa;
+  padding: 20px;
+  text-align: center;
+  border-bottom: 3px solid #dc3545;
+}
+
+.content-email {
+  padding: 20px;
+}
+
+.footer-email {
+  background-color: #f8f9fa;
+  padding: 20px;
+  text-align: center;
+  font-size: 12px;
+  color: #6c757d;
+}
+
+.booking-details-email {
+  background-color: #f8f9fa;
+  padding: 15px;
+  margin: 20px 0;
+  border-left: 3px solid #dc3545;
+}
+
+.highlight {
+  color: #dc3545;
+  font-weight: bold;
+}
+
+/* My Bookings Styles */
+.booking-card {
+  transition: transform 0.2s;
+  margin-bottom: 20px;
+}
+
+.booking-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+/* Admin Bookings Styles */
+.booking-status {
+  width: 80px;
+}
+
+.search-box {
+  margin-bottom: 20px;
+}
+
+.filter-badge {
+  margin-right: 5px;
+  cursor: pointer;
+}
+
+.highlight {
+  background-color: #ffffcc;
+}
+
+/* Book Movie Styles */
+.screening-card {
+  transition: transform 0.2s;
+}
+
+.screening-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.sold-out {
+  opacity: 0.6;
+}
+
+/* Book Tickets Styles */
+.ticket-info {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+/* Cinema Screenings Styles */
+.date-nav {
+  overflow-x: auto;
+  white-space: nowrap;
+  padding: 10px 0;
+  margin-bottom: 20px;
+}
+
+.date-nav .date-item {
+  display: inline-block;
+  text-align: center;
+  padding: 10px 15px;
+  margin-right: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  min-width: 100px;
+  transition: all 0.3s;
+}
+
+.date-nav .date-item:hover {
+  background-color: #f8f9fa;
+}
+
+.date-nav .date-item.active {
+  background-color: #007bff;
+  color: white;
+}
+
+.date-nav .date-item .day-name {
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.date-nav .date-item .date-number {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.date-nav .date-item .month {
+  font-size: 0.8rem;
+}
+
+.time-slot {
+  display: inline-block;
+  margin: 5px;
+  padding: 10px 15px;
+  border-radius: 5px;
+  background-color: #f8f9fa;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.time-slot:hover {
+  background-color: #007bff;
+  color: white;
+}
+
+.time-slot.sold-out {
+  background-color: #e9ecef;
+  color: #adb5bd;
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+
+.cinema-details {
+  margin-bottom: 30px;
+}
+
+/* Confirm Booking Styles */
+.movie-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.movie-poster {
+  width: 120px;
+  margin-right: 1rem;
+}
+
+.movie-details h3 {
+  margin-bottom: 0.5rem;
+}
+
+.seat-summary {
+  background-color: #f8f9fa;
+  padding: 1rem;
+  border-radius: 5px;
+  margin-bottom: 1.5rem;
+}
+
+.seat-row {
+  display: flex;
+  margin-bottom: 0.5rem;
+}
+
+.seat-label {
+  width: 30px;
+  text-align: center;
+  font-weight: bold;
+  margin-right: 0.5rem;
+}
+
+.seat {
+  width: 30px;
+  height: 30px;
+  margin: 0 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  border-radius: 5px;
+  background-color: #dc3545;
+  color: white;
+}
+.payment-summary {
+  background-color: #f8f9fa;
+  padding: 1rem;
+  border-radius: 5px;
+  margin-bottom: 1.5rem;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.summary-total {
+  font-weight: bold;
+  border-top: 1px solid #dee2e6;
+  padding-top: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.timer {
+  background-color: #f8f9fa;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.seat-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 10px;
+}
+
+.seat-tag {
+  background-color: #e9ecef;
+  border-radius: 3px;
+  padding: 2px 8px;
+  font-size: 14px;
+}
+
+.payment-method {
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 15px;
+  margin-bottom: 15px;
+  transition: all 0.3s;
+}
+
+.payment-method-icon {
+  font-size: 24px;
+  margin-right: 10px;
+}
+
+.payment-details {
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin-top: 15px;
+}
+
+.rules-box {
+  background-color: #fff3cd;
+  border-left: 4px solid #ffc107;
+  padding: 15px;
+  margin-top: 20px;
+  border-radius: 4px;
+}
+
+.rules-title {
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #856404;
+}
+
+.rules-list {
+  padding-left: 20px;
+  margin-bottom: 0;
+}
+
+.rules-list li {
+  margin-bottom: 8px;
+}
+
+.warning-text {
+  color: #dc3545;
+  font-weight: bold;
+}
+
+/* Counter Payments Admin Styles */
+.table-actions {
+  white-space: nowrap;
+}
+
+.badge-counter {
+  position: relative;
+  top: -10px;
+  right: -5px;
+  padding: 3px 6px;
+  font-size: 10px;
+  border-radius: 50%;
+}
+
+.status-badge {
+  font-size: 85%;
+}
+
+.payment-card {
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.payment-card-header {
+  background-color: #f8f9fa;
+  padding: 10px 15px;
+  border-bottom: 1px solid #ddd;
+}
+
+.payment-card-body {
+  padding: 15px;
+}
+
+.payment-card-footer {
+  background-color: #f8f9fa;
+  padding: 10px 15px;
+  border-top: 1px solid #ddd;
+}
+
+.countdown {
+  font-weight: bold;
+  color: #dc3545;
+}
+
+/* Sales Report Styles */
+.stat-card {
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  transition: transform 0.3s;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+}
+
+.report-type-btn {
+  border-radius: 20px;
+  padding: 8px 20px;
+}
+
+/* Dashboard Styles */
+.badge-screening {
+  font-size: 0.8rem;
+  margin-right: 5px;
+  margin-bottom: 5px;
+}
+
+.no-show-badge {
+  font-size: 0.9rem;
+  padding: 5px 10px;
+  border-radius: 15px;
+}
+
+/* Admin Dashboard Styles */
+.stat-icon {
+  font-size: 3rem;
+  opacity: 0.8;
+}
+
+.alert-counter {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  font-size: 12px;
+  background: #dc3545;
+  color: white;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.report-card {
+  transition: transform 0.3s;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  height: 100%;
+}
+
+.report-card:hover {
+  transform: translateY(-5px);
+}
+
+.report-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Admin Sidebar Styles */
+.sidebar {
+  min-height: 100vh;
+  background-color: #343a40;
+  color: #fff;
+}
+
+.sidebar .list-group-item {
+  background-color: transparent;
+  color: #fff;
+  border: none;
+  border-radius: 0;
+  padding: 0.75rem 1.25rem;
+}
+
+.sidebar .list-group-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar .list-group-item.active {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+/* Edit Movie Admin Styles */
+.custom-file-input:focus ~ .custom-file-label {
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Edit Screening Styles */
+.time-option {
+  margin-right: 10px;
+  margin-bottom: 10px;
+  padding: 8px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  cursor: pointer;
+  display: inline-block;
+}
+
+.time-option.selected {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.time-option.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+
+/* Error Page Styles */
+.error-container {
+  text-align: center;
+  padding: 40px 0;
+}
+
+.error-icon {
+  font-size: 5rem;
+  color: #dc3545;
+  margin-bottom: 20px;
+}
+
+/* Notification Styles */
+.notification-item {
+  transition: background-color 0.3s;
+}
+
+.notification-item:hover {
+  background-color: #f8f9fa;
+}
+
+.notification-item.unread {
+  background-color: #f0f7ff;
+}
+
+.notification-icon {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  text-align: center;
+  line-height: 24px;
+}
+
+.notification-bell {
+  position: relative;
+  cursor: pointer;
+}
+
+.notification-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  font-size: 10px;
+  background: #dc3545;
+  color: white;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notification-dropdown {
+  width: 350px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.notification-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.notification-footer {
+  text-align: center;
+  padding: 10px;
+  border-top: 1px solid #dee2e6;
+}
+
+.notification-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+/* Forgot Password Styles */
+.forgot-password-container {
+  max-width: 450px;
+  margin: 100px auto;
+  padding: 30px;
+  background-color: #fff;
+  border-radius: 5px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Hero Section Styles from index.html */
+.hero-section {
+  background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('/images/cinema-background.jpg');
+  background-size: cover;
+  background-position: center;
+  color: white;
+  padding: 100px 0;
+  margin-bottom: 40px;
+}
+
+/* Carousel Styles from index.html */
+.carousel-item {
+  height: 500px;
+}
+
+.carousel-image {
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.7);
+}
+
+.carousel-caption {
+  bottom: 100px;
+}
+
+/* Section Title Styles from index.html */
+.section-title {
+  position: relative;
+  margin-bottom: 30px;
+  padding-bottom: 15px;
+}
+
+.section-title:after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 50px;
+  height: 2px;
+  background-color: #007bff;
+}
+
+/* Feature Box Styles from index.html */
+.feature-box {
+  padding: 30px;
+  text-align: center;
+  border-radius: 5px;
+  transition: transform 0.3s;
+}
+
+.feature-box:hover {
+  transform: translateY(-10px);
+}
+
+.feature-icon {
+  font-size: 3rem;
+  margin-bottom: 20px;
+  color: #007bff;
+}
+
+/* Login Page Styles from login.html */
+.admin-login-link {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 0.9rem;
+}
+
+.session-info {
+  font-size: 0.8rem;
+  text-align: center;
+  margin-top: 10px;
+  color: #6c757d;
+}
+
+/* Main Page Styles from main.html */
+.screening-item {
+  transition: background-color 0.3s;
+}
+
+.screening-item:hover {
+  background-color: #f8f9fa;
+}
+
+/* Movie Details Styles from movie-details.html */
+.movie-poster {
+  max-height: 400px;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.movie-info {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.screening-card {
+  transition: transform 0.3s;
+}
+
+.screening-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.badge-genre {
+  background-color: #6c757d;
+  margin-right: 5px;
+}
+
+.trailer-container {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 aspect ratio */
+  height: 0;
+  overflow: hidden;
+  max-width: 100%;
+  margin-top: 20px;
+  border-radius: 8px;
+}
+
+.trailer-container iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+}
+
+.book-btn {
+  transition: all 0.3s;
+}
+
+.book-btn:hover {
+  transform: scale(1.05);
+}
+
+.unavailable {
+  background-color: #e9ecef;
+  color: #adb5bd;
+  cursor: not-allowed;
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.unavailable-text {
+  font-size: 0.8rem;
+  color: #dc3545;
+  font-style: italic;
+}
+
+/* Movies Admin Styles from movies-admin.html */
+.movie-poster {
+  width: 50px;
+  height: 75px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+
+.badge-rating {
+  background-color: #6c757d;
+  color: white;
+  font-size: 0.8rem;
+}
+
+.badge-language {
+  background-color: #17a2b8;
+  color: white;
+  font-size: 0.8rem;
+}
+
+/* Movie Screening Styles from movie-screening.html */
+.date-section {
+  display: none; /* Hide all date sections by default */
+}
+
+.date-section.active {
+  display: block; /* Show only active date section */
+}
+
+.cinema-name {
+  font-weight: bold;
+  margin-top: 15px;
+  margin-bottom: 10px;
+}
+
+/* Media Queries for Responsive Design */
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 60px 0;
+  }
+  
+  .carousel-item {
+    height: 300px;
+  }
+  
+  .carousel-caption {
+    bottom: 40px;
+  }
+  
+  .movie-poster, .movie-image {
+    height: 250px;
+  }
+  
+  .movie-poster {
+    max-height: 300px;
+    margin: 0 auto;
+    display: block;
+  }
+}
+
+@media (max-width: 576px) {
+  .movie-poster, .movie-image {
+    height: 200px;
+  }
+  
+  .feature-box {
+    margin-bottom: 20px;
+  }
+  
+  .section-title {
+    margin-bottom: 20px;
+  }
+}

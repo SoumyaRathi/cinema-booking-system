@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>My Profile</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <style>
+        .profile-header {
+            background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        .profile-img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 5px solid rgba(255,255,255,0.3);
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" th:href="@{/}">Movie Ticket Booking</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/movies}">Movies</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/bookings/my-bookings}">My Bookings</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/dashboard}">My Dashboard</a>
+                    </li>
+                    <li class="nav-item active">
+                        <a class="nav-link" th:href="@{/profile}">My Profile</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/logout}">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Success and Error Messages -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${success}"></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${error}"></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        
+        <!-- Profile Header -->
+        <div class="profile-header text-center">
+            <img src="https://via.placeholder.com/150" class="profile-img mb-3" alt="Profile Picture">
+            <h1 th:text="${user != null ? user.firstName + ' ' + user.lastName : 'User Profile'}">User Profile</h1>
+            <p class="lead mb-0" th:text="${user != null ? user.email : 'user@example.com'}">user@example.com</p>
+        </div>
+        
+        <div class="row">
+            <!-- Profile Information -->
+            <div class="col-lg-6">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Profile Information</h6>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/profile/update}" method="post">
+                            <div class="form-group">
+                                <label for="firstName">First Name</label>
+                                <input type="text" class="form-control" id="firstName" name="firstName" 
+                                       th:value="${user != null ? user.firstName : ''}" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="lastName">Last Name</label>
+                                <input type="text" class="form-control" id="lastName" name="lastName" 
+                                       th:value="${user != null ? user.lastName : ''}" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email Address</label>
+                                <input type="email" class="form-control" id="email" name="email" 
+                                       th:value="${user != null ? user.email : ''}" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="phone">Phone Number</label>
+                                <input type="tel" class="form-control" id="phone" name="phone" 
+                                       th:value="${user != null ? user.phone : ''}">
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save mr-1"></i> Save Changes
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Change Password -->
+            <div class="col-lg-6">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Change Password</h6>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/profile/change-password}" method="post">
+                            <div class="form-group">
+                                <label for="currentPassword">Current Password</label>
+                                <input type="password" class="form-control" id="currentPassword" name="currentPassword" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="newPassword">New Password</label>
+                                <input type="password" class="form-control" id="newPassword" name="newPassword" required>
+                                <small class="form-text text-muted">Password must be at least 8 characters long.</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="confirmPassword">Confirm New Password</label>
+                                <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-key mr-1"></i> Change Password
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Account Settings -->
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Account Settings</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label>Account Status</label>
+                            <p class="form-control-plaintext">
+                                <span th:if="${user != null && !user.isBlocked}" class="badge badge-success">Active</span>
+                                <span th:if="${user != null && user.isBlocked}" class="badge badge-danger">Blocked</span>
+                                <span th:unless="${user != null}" class="badge badge-secondary">Unknown</span>
+                            </p>
+                        </div>
+                        <div class="form-group">
+                            <label>Member Since</label>
+                            <p class="form-control-plaintext" th:text="${user != null ? #temporals.format(user.createdAt, 'MMMM d, yyyy') : 'N/A'}">January 1, 2023</p>
+                        </div>
+                        <div class="form-group">
+                            <label>Total Bookings</label>
+                            <p class="form-control-plaintext" th:text="${totalBookings != null ? totalBookings : '0'}">0</p>
+                        </div>
+                        <div class="form-group" th:if="${user != null && user.noShowCount > 0}">
+                            <label>No-Show Count</label>
+                            <p class="form-control-plaintext">
+                                <span th:class="'badge ' + (${user.noShowCount == 1} ? 'badge-warning' : (${user.noShowCount == 2} ? 'badge-danger' : 'badge-dark')" 
+                                      th:text="${user.noShowCount}">0</span>
+                            </p>
+                        </div>
+                        <div class="form-group" th:if="${user != null && user.blockedUntil != null}">
+                            <label>Blocked Until</label>
+                            <p class="form-control-plaintext text-danger" th:text="${#temporals.format(user.blockedUntil, 'MMMM d, yyyy')}">Date</p>
+                        </div>
+                        
+                        <!-- Account Actions -->
+                        <div class="mt-4">
+                            <h6 class="text-muted">Account Actions</h6>
+                            <a th:href="@{/profile/download-data}" class="btn btn-outline-info btn-sm mr-2 mb-2">
+                                <i class="fas fa-download mr-1"></i> Download My Data
+                            </a>
+                            <a th:href="@{/profile/privacy-settings}" class="btn btn-outline-secondary btn-sm mr-2 mb-2">
+                                <i class="fas fa-shield-alt mr-1"></i> Privacy Settings
+                            </a>
+                            <a th:href="@{/profile/notification-preferences}" class="btn btn-outline-primary btn-sm mr-2 mb-2">
+                                <i class="fas fa-bell mr-1"></i> Notification Preferences
+                            </a>
+                            <br>
+                            <a th:href="@{/profile/delete-account}" class="btn btn-danger btn-sm mt-2" 
+                               onclick="return confirm('Are you sure you want to delete your account? This action cannot be undone.')">
+                                <i class="fas fa-trash mr-1"></i> Delete Account
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Booking History Summary -->
+                <div class="card shadow mb-4" th:if="${recentBookings != null && !recentBookings.isEmpty()}">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Recent Bookings</h6>
+                    </div>
+                    <div class="card-body">
+                        <div th:each="booking : ${recentBookings}" class="mb-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <small class="text-muted" th:text="${booking.screening.movie.title}">Movie Title</small><br>
+                                    <small th:text="${#temporals.format(booking.screening.screeningTime, 'MMM d, yyyy')}">Date</small>
+                                </div>
+                                <div>
+                                    <span th:class="'badge badge-' + (${booking.status == 'CONFIRMED'} ? 'success' : (${booking.status == 'CANCELLED'} ? 'danger' : 'warning'))" 
+                                          th:text="${booking.status}">Status</span>
+                                </div>
+                            </div>
+                            <hr th:unless="${bookingStat.last}">
+                        </div>
+                        <div class="text-center mt-3">
+                            <a th:href="@{/bookings/my-bookings}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-list mr-1"></i> View All Bookings
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="bg-dark text-white mt-5 py-3">
+        <div class="container text-center">
+            <p class="mb-0">&copy; 2023 Movie Ticket Booking System. All rights reserved.</p>
+        </div>
+    </footer>
+    
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        // Auto-dismiss alerts after 5 seconds
+        $(document).ready(function() {
+            setTimeout(function() {
+                $('.alert').alert('close');
+            }, 5000);
+        });
+    </script>
+</body>
+</html>

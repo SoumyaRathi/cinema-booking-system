@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Debug Uploads</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Debug Uploads</h1>
+        <p>Upload Directory: <strong th:text="${uploadPath}">path</strong></p>
+        
+        <h2>Files in Upload Directory:</h2>
+        <div th:if="${files.empty}" class="alert alert-warning">
+            No files found in upload directory.
+        </div>
+        
+        <ul th:unless="${files.empty}" class="list-group">
+            <li th:each="file : ${files}" class="list-group-item">
+                <div class="row">
+                    <div class="col-md-8" th:text="${file}">filename</div>
+                    <div class="col-md-4">
+                        <a th:href="@{'/uploads' + ${file}}" target="_blank" class="btn btn-sm btn-primary">View</a>
+                    </div>
+                </div>
+            </li>
+        </ul>
+        
+        <h2 class="mt-4">Test Image Display</h2>
+        <div class="row">
+            <div class="col-md-6" th:each="file : ${files}" th:if="${file.endsWith('.jpg') || file.endsWith('.jpeg') || file.endsWith('.png') || file.endsWith('.gif')}">
+                <div class="card mb-3">
+                    <img th:src="@{'/uploads' + ${file}}" class="card-img-top" alt="Test Image">
+                    <div class="card-body">
+                        <h5 class="card-title" th:text="${file}">Image Path</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

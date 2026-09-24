@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Registration</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div class="container">
+        <div class="row mt-5">
+            <div class="col-md-6 offset-md-3">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h3>Registration</h3>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${param.success}" class="alert alert-success">
+                            Registration successful! Please check your email to verify your account.
+                        </div>
+                        <div th:if="${error}" class="alert alert-danger" th:text="${error}">
+                            Error message
+                        </div>
+                        <form th:action="@{/register}" th:object="${user}" method="post">
+                            <div class="form-group">
+                                <label for="firstName">First Name</label>
+                                <input type="text" th:field="*{firstName}" id="firstName" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="lastName">Last Name</label>
+                                <input type="text" th:field="*{lastName}" id="lastName" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email</label>
+                                <input type="email" th:field="*{email}" id="email" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="password">Password</label>
+                                <input type="password" th:field="*{password}" id="password" class="form-control" required>
+                            </div>
+                            <div class="form-group form-check">
+                                <input type="checkbox" th:field="*{privacyPolicyAccepted}" id="privacyPolicyAccepted" class="form-check-input" required>
+                                <label class="form-check-label" for="privacyPolicyAccepted">
+                                    I agree to the <a href="#" data-toggle="modal" data-target="#privacyPolicyModal">Republic Act 10173 (Data Privacy Act)</a> regarding the collection and processing of my personal information.
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-primary btn-block">Register</button>
+                            </div>
+                        </form>
+                        <div class="text-center">
+                            <p>Already have an account? <a th:href="@{/login}">Login here</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Privacy Policy Modal -->
+        <div class="modal fade" id="privacyPolicyModal" tabindex="-1" role="dialog" aria-labelledby="privacyPolicyModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="privacyPolicyModalLabel">Republic Act 10173 (Data Privacy Act)</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <h5>Data Privacy Act of 2012</h5>
+                        <p>Republic Act 10173, also known as the Data Privacy Act of 2012, is a law that aims to protect all forms of information, be it private, personal, or sensitive. It is meant to cover both natural and juridical persons involved in the processing of personal information.</p>
+                        
+                        <h5>Key Points:</h5>
+                        <ul>
+                            <li>We collect personal information for the purpose of providing movie ticket booking services.</li>
+                            <li>Your personal information will be used only for the purposes for which it was collected.</li>
+                            <li>We implement reasonable and appropriate security measures to protect your personal information.</li>
+                            <li>You have the right to access, correct, and object to the processing of your personal information.</li>
+                            <li>We will retain your information only for as long as necessary for the fulfillment of the purposes for which it was collected.</li>
+                        </ul>
+                        
+                        <p>By checking the box, you acknowledge that you have read and understood our privacy policy and consent to the collection, use, and processing of your personal information in accordance with this policy and the Data Privacy Act of 2012.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

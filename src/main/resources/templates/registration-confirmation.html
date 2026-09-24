@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Registration Confirmation</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div class="container">
+        <div class="row mt-5">
+            <div class="col-md-6 offset-md-3">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h3>Registration Confirmation</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-success" th:if="${success}" th:text="${success}">
+                            Registration successful! Please check your email to verify your account.
+                        </div>
+                        <div class="alert alert-info">
+                            <p>We have sent a verification email to your registered email address.</p>
+                            <p>Please check your inbox (and spam folder) and click on the verification link to activate your account.</p>
+                            <p>You will not be able to log in until your account is verified.</p>
+                        </div>
+                        <div class="text-center mt-4">
+                            <a th:href="@{/login}" class="btn btn-primary">Go to Login Page</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

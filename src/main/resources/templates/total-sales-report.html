@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Total Sales Report</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <!-- Fix deprecated fragment syntax -->
+    <th:block th:replace="~{notification-fragment :: notification-styles}"></th:block>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .stat-card {
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-2 bg-dark text-white p-0" style="min-height: 100vh;">
+                <div class="p-4">
+                    <h4>Admin Panel</h4>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a th:href="@{/admin/dashboard}" class="list-group-item list-group-item-action bg-dark text-white">Dashboard</a>
+                    <a th:href="@{/admin/movies}" class="list-group-item list-group-item-action bg-dark text-white">Movies</a>
+                    <a th:href="@{/admin/users}" class="list-group-item list-group-item-action bg-dark text-white">Users</a>
+                    <a th:href="@{/admin/bookings}" class="list-group-item list-group-item-action bg-dark text-white">Bookings</a>
+                    <a th:href="@{/admin/no-shows}" class="list-group-item list-group-item-action bg-dark text-white">
+                        No-Shows
+                    </a>
+                    <a th:href="@{/admin/reports}" class="list-group-item list-group-item-action bg-dark text-white active">
+                        Reports
+                    </a>
+                    <a th:href="@{/admin/notifications}" class="list-group-item list-group-item-action bg-dark text-white">
+                        Notifications
+                        <span th:if="${unreadNotificationsCount > 0}" class="badge badge-danger ml-2" th:text="${unreadNotificationsCount}">0</span>
+                    </a>
+                    <!-- Fix incomplete anchor tag -->
+                    <a th:href="@{/admin/profile}" class="list-group-item list-group-item-action bg-dark text-white">Profile</a>
+                    <a th:href="@{/logout}" class="list-group-item list-group-item-action bg-dark text-white">Logout</a>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-10 p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2>Total Sales Report</h2>
+                    <!-- Fix notification fragment syntax -->
+                    <div th:replace="~{notification-fragment :: notification-bell}"></div>
+                </div>
+                
+                <!-- Date Range Filter -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5>Date Range Filter</h5>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/admin/reports/total-sales}" method="get" class="form-inline">
+                            <div class="form-group mr-3">
+                                <label for="startDate" class="mr-2">Start Date:</label>
+                                <input type="date" id="startDate" name="startDate" class="form-control" th:value="${startDate}">
+                            </div>
+                            <div class="form-group mr-3">
+                                <label for="endDate" class="mr-2">End Date:</label>
+                                <input type="date" id="endDate" name="endDate" class="form-control" th:value="${endDate}">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Apply Filter</button>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Summary Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="card stat-card bg-primary text-white">
+                            <div class="card-body">
+                                <h5 class="card-title">Total Revenue</h5>
+                                <h2 class="card-text" th:text="${'₱' + #numbers.formatDecimal(totalRevenue, 0, 2)}">₱10,000.00</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card stat-card bg-success text-white">
+                            <div class="card-body">
+                                <h5 class="card-title">Total Bookings</h5>
+                                <h2 class="card-text" th:text="${totalBookings}">150</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card stat-card bg-info text-white">
+                            <div class="card-body">
+                                <h5 class="card-title">Average Booking Value</h5>
+                                <h2 class="card-text" th:text="${totalBookings > 0 ? '₱' + #numbers.formatDecimal(totalRevenue / totalBookings, 0, 2) : '₱0.00'}">₱66.67</h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Revenue by Payment Method -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5>Revenue by Payment Method</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <canvas id="paymentMethodChart" height="300"></canvas>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Payment Method</th>
+                                                <th>Revenue</th>
+                                                <th>%</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="entry : ${paymentMethodRevenue}">
+                                                <td th:text="${entry.key}">Credit Card</td>
+                                                <td th:text="${'₱' + #numbers.formatDecimal(entry.value, 0, 2)}">₱5000.00</td>
+                                                <td th:text="${totalRevenue > 0 ? #numbers.formatDecimal(entry.value / totalRevenue * 100, 0, 2) + '%' : '0.00%'}">50.00%</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Daily Revenue Trend -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Daily Revenue Trend</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="dailyRevenueChart" height="100"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Navigation Buttons -->
+                <div class="mt-4">
+                    <div class="btn-group">
+                        <a th:href="@{/admin/reports}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left mr-2"></i> Back to Reports
+                        </a>
+                        <a th:href="@{/admin/dashboard}" class="btn btn-primary">
+                            <i class="fas fa-tachometer-alt mr-2"></i> Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- Fix notification scripts fragment syntax -->
+    <th:block th:replace="~{notification-fragment :: notification-scripts}"></th:block>
+    
+    <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            // Payment Method Chart
+            const paymentMethodData = /*[[${paymentMethodRevenue}]]*/ {};
+            const paymentMethodLabels = Object.keys(paymentMethodData);
+            const paymentMethodValues = Object.values(paymentMethodData).map(value => parseFloat(value));
+            
+            console.log('Payment method data:', paymentMethodData);
+            console.log('Payment method labels:', paymentMethodLabels);
+            console.log('Payment method values:', paymentMethodValues);
+            
+            if (paymentMethodLabels.length > 0 && paymentMethodValues.length > 0) {
+                new Chart(document.getElementById('paymentMethodChart'), {
+                    type: 'pie',
+                    data: {
+                        labels: paymentMethodLabels,
+                        datasets: [{
+                            data: paymentMethodValues,
+                            backgroundColor: [
+                                'rgba(255, 99, 132, 0.8)',
+                                'rgba(54, 162, 235, 0.8)',
+                                'rgba(255, 206, 86, 0.8)',
+                                'rgba(75, 192, 192, 0.8)',
+                                'rgba(153, 102, 255, 0.8)'
+                            ],
+                            borderColor: [
+                                'rgba(255, 99, 132, 1)',
+                                'rgba(54, 162, 235, 1)',
+                                'rgba(255, 206, 86, 1)',
+                                'rgba(75, 192, 192, 1)',
+                                'rgba(153, 102, 255, 1)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const value = context.raw;
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = ((value / total) * 100).toFixed(2) + '%';
+                                        return context.label + ': ₱' + value.toFixed(2) + ' (' + percentage + ')';
+                                    }
+                                }
+                            },
+                            legend: {
+                                position: 'right'
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Daily Revenue Chart
+            const dailyRevenueData = /*[[${dailyRevenue}]]*/ {};
+            const dailyRevenueLabels = Object.keys(dailyRevenueData);
+            const dailyRevenueValues = Object.values(dailyRevenueData).map(value => parseFloat(value));
+            
+            console.log('Daily revenue data:', dailyRevenueData);
+            console.log('Daily revenue labels:', dailyRevenueLabels);
+            console.log('Daily revenue values:', dailyRevenueValues);
+            
+            if (dailyRevenueLabels.length > 0 && dailyRevenueValues.length > 0) {
+                new Chart(document.getElementById('dailyRevenueChart'), {
+                    type: 'line',
+                    data: {
+                        labels: dailyRevenueLabels,
+                        datasets: [{
+                            label: 'Daily Revenue',
+                            data: dailyRevenueValues,
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 2,
+                            tension: 0.1,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return '₱' + value.toFixed(2);
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return 'Revenue: ₱' + context.raw.toFixed(2);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

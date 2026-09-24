@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard - Movie Ticket Booking</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .movie-card {
+            height: 100%;
+            transition: transform 0.3s;
+        }
+        .movie-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .card-img-container {
+            position: relative;
+            height: 300px;
+            overflow: hidden;
+        }
+        .movie-poster {
+            height: 300px;
+            object-fit: cover;
+            width: 100%;
+        }
+        .no-poster {
+            height: 300px;
+            background-color: #f8f9fa;
+            border: 2px dashed #dee2e6;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" th:href="@{/dashboard}">Movie Ticket Booking</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item active">
+                        <a class="nav-link" th:href="@{/dashboard}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/movies}">Movies</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/screenings}">Screenings</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/bookings/my-bookings}">My Bookings</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown">
+                            <i class="fas fa-user-circle mr-1"></i>
+                            <span th:if="${user != null}" th:text="${user.firstName}">User</span>
+                            <span th:if="${noShowCount != null && noShowCount > 0}" 
+                                  class="badge badge-pill ml-1" 
+                                  th:classappend="${noShowCount == 1 ? 'badge-warning' : (noShowCount == 2 ? 'badge-danger' : 'badge-dark')}"
+                                  th:text="${noShowCount}">0</span>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right">
+                            <a class="dropdown-item" th:href="@{/profile}">
+                                <i class="fas fa-id-card mr-2"></i>Profile
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" th:href="@{/logout}">
+                                <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                            </a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mt-4">
+        <!-- Welcome Message -->
+        <div class="jumbotron">
+            <h1 class="display-4">Welcome, <span th:if="${user != null}" th:text="${user.firstName}">User</span>!</h1>
+            <p class="lead">Discover the latest movies and book your tickets online.</p>
+            <hr class="my-4">
+            <p>Check out our featured movies below or browse all movies to find your next cinema experience.</p>
+            <a class="btn btn-primary btn-lg" th:href="@{/movies}" role="button">Browse All Movies</a>
+        </div>
+
+        <!-- Success and Error Messages -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${success}"></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${error}"></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+
+        <!-- No-Show Warning Alert -->
+        <div th:if="${noShowWarning}" th:class="'alert alert-' + ${noShowWarningLevel} + ' alert-dismissible fade show mb-4'" role="alert">
+            <div class="d-flex">
+                <div class="mr-3">
+                    <i class="fas fa-exclamation-triangle fa-2x"></i>
+                </div>
+                <div>
+                    <h5 class="alert-heading">No-Show Warning</h5>
+                    <p th:text="${noShowWarning}">Warning message</p>
+                    
+                    <!-- Blocked User Message -->
+                    <div th:if="${userBlocked}" class="mt-2">
+                        <strong>Your account is blocked.</strong>
+                        <p th:if="${blockReason}" th:text="${blockReason}">Block reason</p>
+                        <p>Please contact customer support for assistance.</p>
+                    </div>
+                    
+                    <!-- Temporarily Blocked User Message -->
+                    <div th:if="${userTempBlocked}" class="mt-2">
+                        <strong>Your account is temporarily restricted until:</strong>
+                        <p th:text="${#temporals.format(blockedUntil, 'EEEE, MMMM d, yyyy')}">Date</p>
+                    </div>
+                    
+                    <!-- No-Show Count Badge -->
+                    <div class="mt-2">
+                        <span class="badge badge-pill no-show-badge" 
+                              th:classappend="${noShowCount == 1 ? 'badge-warning' : (noShowCount == 2 ? 'badge-danger' : 'badge-dark')}"
+                              th:text="'No-Shows: ' + ${noShowCount}">No-Shows: 0</span>
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+
+        <!-- Featured Movies Section -->
+        <h2 class="mb-4">Featured Movies</h2>
+        <div class="row">
+            <!-- Check if movies list exists and is not empty -->
+            <div th:if="${#lists.isEmpty(movies)}" class="col-12">
+                <div class="alert alert-info">
+                    No movies available at the moment. Please check back later.
+                </div>
+            </div>
+            
+            <!-- Movie Cards -->
+            <div th:if="${not #lists.isEmpty(movies)}" th:each="movie : ${movies}" class="col-md-4 mb-4">
+                <div class="card movie-card">
+                    <div class="card-img-container">
+                        <!-- UPDATED: Use effectiveImageUrl -->
+                        <img th:if="${movie.effectiveImageUrl != null}" 
+                             th:src="${movie.effectiveImageUrl}" 
+                             class="card-img-top movie-poster" 
+                             th:alt="${movie.title + ' Poster'}">
+                        <div th:unless="${movie.effectiveImageUrl != null}" 
+                             class="no-poster d-flex align-items-center justify-content-center">
+                            <div class="text-center">
+                                <i class="fas fa-film fa-3x text-muted mb-2"></i>
+                                <div class="text-muted">No poster available</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title" th:text="${movie.title}">Movie Title</h5>
+                        <p class="card-text text-muted">
+                            <span th:text="${movie.genre}">Genre</span> | 
+                            <span th:text="${movie.duration + ' min'}">Duration</span>
+                        </p>
+                        <p class="card-text" th:text="${#strings.abbreviate(movie.description, 100)}">Description</p>
+                    </div>
+                    <div class="card-footer bg-white">
+                        <a th:href="@{/movies/{id}(id=${movie.id})}" class="btn btn-primary btn-block">
+                            <i class="fas fa-ticket-alt mr-1"></i> Book Tickets
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Bookings Section -->
+        <h2 class="mt-5 mb-4">Your Recent Bookings</h2>
+        <div class="row">
+            <!-- Check if bookings list exists and is not empty -->
+            <div th:if="${#lists.isEmpty(recentBookings)}" class="col-12">
+                <div class="alert alert-info">
+                    You don't have any recent bookings. 
+                    <a th:href="@{/movies}" class="alert-link">Book a movie now!</a>
+                </div>
+            </div>
+             <!-- Booking Cards -->
+            <div th:if="${not #lists.isEmpty(recentBookings)}" th:each="booking : ${recentBookings}" class="col-md-6 mb-4">
+                <div class="card booking-card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <span th:if="${booking.screening != null && booking.screening.movie != null}" 
+                                  th:text="${booking.screening.movie.title}">Movie Title</span>
+                            <span th:unless="${booking.screening != null && booking.screening.movie != null}">Unknown Movie</span>
+                        </h5>
+                        <span th:if="${booking.status == 'CONFIRMED'}" class="badge badge-success">Confirmed</span>
+                        <span th:if="${booking.status == 'RESERVED'}" class="badge badge-warning">Reserved</span>
+                        <span th:if="${booking.status == 'CANCELLED'}" class="badge badge-danger">Cancelled</span>
+                        <span th:if="${booking.status == 'NO_SHOW'}" class="badge badge-dark">No-Show</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <p class="card-text">
+                                    <i class="far fa-calendar-alt mr-2"></i>
+                                    <span th:if="${booking.screening != null}" 
+                                          th:text="${#temporals.format(booking.screening.screeningTime, 'EEEE, MMM d, yyyy')}">Date</span>
+                                </p>
+                                <p class="card-text">
+                                    <i class="far fa-clock mr-2"></i>
+                                    <span th:if="${booking.screening != null}" 
+                                          th:text="${#temporals.format(booking.screening.screeningTime, 'h:mm a')}">Time</span>
+                                </p>
+                                <p class="card-text">
+                                    <i class="fas fa-map-marker-alt mr-2"></i>
+                                    <span th:if="${booking.screening != null}" 
+                                          th:text="${booking.screening.theater}">Theater</span>
+                                </p>
+                                <p class="card-text">
+                                    <i class="fas fa-ticket-alt mr-2"></i>
+                                    <span th:text="${booking.numberOfSeats + ' Seats'}">Seats</span>
+                                </p>
+                            </div>
+                            <div class="col-md-4 text-right">
+                                <h4 class="text-primary mb-3" th:text="${'₱' + #numbers.formatDecimal(booking.totalPrice, 1, 2)}">₱0.00</h4>
+                                <span th:if="${booking.paid}" class="badge badge-success">Paid</span>
+                                <span th:unless="${booking.paid}" class="badge badge-warning">Unpaid</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white">
+                        <a th:href="@{/bookings/{id}(id=${booking.id})}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-info-circle mr-1"></i> View Details
+                        </a>
+                        <a th:if="${booking.status != 'CANCELLED' && booking.status != 'NO_SHOW' && !booking.paid}" 
+                           th:href="@{/bookings/{id}/payment(id=${booking.id})}" 
+                           class="btn btn-success btn-sm float-right">
+                            <i class="fas fa-credit-card mr-1"></i> Pay Now
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white mt-5 py-3">
+        <div class="container text-center">
+            <p class="mb-0">&copy; 2023 Movie Ticket Booking System. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script th:src="@{/js/script.js}"></script>
+</body>
+</html>

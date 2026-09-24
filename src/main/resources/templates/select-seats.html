@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Select Seats</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <style>
+        .booking-progress {
+            display: flex;
+            margin-bottom: 2rem;
+        }
+        
+        .booking-step {
+            flex: 1;
+            text-align: center;
+            padding: 1rem 0.5rem;
+            background-color: #f8f9fa;
+            border-right: 1px solid #fff;
+        }
+        
+        .booking-step.active {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .booking-step.completed {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .movie-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .movie-poster {
+            width: 120px;
+            margin-right: 1rem;
+        }
+        
+        .movie-details h3 {
+            margin-bottom: 0.5rem;
+        }
+        
+        .seat-legend {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 0 1rem;
+        }
+        
+        .legend-box {
+            width: 20px;
+            height: 20px;
+            margin-right: 0.5rem;
+        }
+        
+        .screen-container {
+            background-color: #eee;
+            text-align: center;
+            padding: 0.5rem;
+            margin-bottom: 2rem;
+            border-radius: 5px;
+        }
+        
+        .seating-layout {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .seat-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .row-label {
+            width: 30px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .seat {
+            width: 30px;
+            height: 30px;
+            margin: 0 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 0.8rem;
+            border-radius: 5px;
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .seat.available {
+            background-color: #6c757d;
+        }
+        
+        .seat.selected {
+            background-color: #dc3545;
+        }
+        
+        .seat.occupied {
+            background-color: #343a40;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+        
+        .seat-spacer {
+            width: 30px;
+            height: 30px;
+            margin: 0 2px;
+        }
+        
+        .basket {
+            background-color: #f8d7da;
+            border-radius: 5px;
+            padding: 1rem;
+        }
+        
+        .basket-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .basket-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        
+        .timer {
+            background-color: #f8f9fa;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        
+        .seat-availability {
+            background-color: #e2f3e5;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            text-align: center;
+            margin-bottom: 1rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" th:href="@{/}">Movie Ticket Booking</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/movies}">Movies</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/bookings/my-bookings}">My Bookings</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/profile}">My Profile</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/logout}">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="container mt-4">
+        <!-- Booking Progress -->
+        <div class="booking-progress">
+            <div class="booking-step completed">1. Select Tickets</div>
+            <div class="booking-step active">2. Select Seats</div>
+            <div class="booking-step">3. Confirm</div>
+            <div class="booking-step">4. Booking Successful</div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-9">
+                <!-- Movie Info -->
+                <div class="movie-info">
+                    <img th:if="${screening.movie.effectiveImageUrl != null && !screening.movie.effectiveImageUrl.isEmpty()}" 
+                         th:src="${screening.movie.effectiveImageUrl}" 
+                         class="movie-poster" 
+                         alt="Movie Poster">
+                    <img th:unless="${screening.movie.effectiveImageUrl != null && !screening.movie.effectiveImageUrl.isEmpty()}" 
+                         src="/images/default-movie.jpg" 
+                         class="movie-poster" 
+                         alt="Default Movie Poster">
+                    <div class="movie-details">
+                        <h3 th:text="${screening.movie.title}">Movie Title</h3>
+                        <p>
+                            Showing on <span th:text="${#temporals.format(screening.screeningTime, 'EEE dd MMM')}">Mon 21 Apr</span> 
+                            <span th:text="${#temporals.format(screening.screeningTime, 'h:mm a')}">2:00PM</span><br>
+                            <span th:text="${screening.theater}">Cinema 2</span><br>
+                            <strong>*Please ensure that you are selecting seats for the correct branch of your choice</strong>
+                        </p>
+                    </div>
+                </div>
+                
+                <h2 class="mb-4">SELECT SEATS</h2>
+                
+                <!-- Available Seats Count -->
+                <div class="seat-availability">
+                    <p>Available Seats: <span th:text="${availableSeatsCount}">100</span> of <span th:text="${totalSeats}">100</span></p>
+                </div>
+                
+                <!-- Seat Legend -->
+                <div class="seat-legend">
+                    <div class="legend-item">
+                        <div class="legend-box" style="background-color: #dc3545;"></div>
+                        <span>Your seat</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-box" style="background-color: #6c757d;"></div>
+                        <span>Available</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-box" style="background-color: #343a40; opacity: 0.5;"></div>
+                        <span>Sold</span>
+                    </div>
+                </div>
+                
+                <!-- Screen -->
+                <div class="screen-container">
+                    <h5 class="mb-0">SCREEN</h5>
+                </div>
+                
+                <!-- Seating Layout -->
+                <div class="seating-layout">
+                    <form th:action="@{/bookings/reserve-seats}" method="post" id="seatSelectionForm">
+                        <input type="hidden" name="screeningId" th:value="${screening.id}">
+                        <input type="hidden" name="numberOfSeats" th:value="${numberOfSeats}">
+                        
+                        <!-- Generate seat rows dynamically -->
+                        <div th:each="row : ${seatRows}" class="seat-row">
+                            <div class="row-label" th:text="${row.key}">A</div>
+                            
+                            <div th:each="seat : ${row.value}" 
+                                 th:class="${seat.booked ? 'seat occupied' : 'seat available'}"
+                                 th:attr="data-seat-id=${seat.id}, data-row=${seat.row}, data-column=${seat.seatColumn}">
+                                <span th:text="${seat.seatColumn}">1</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 text-center">
+                            <button type="button" class="btn btn-secondary btn-lg mr-2" id="cancelButton">
+                                <i class="fas fa-times-circle"></i> Cancel
+                            </button>
+                            <button type="submit" class="btn btn-success btn-lg" id="confirmSeatsBtn" disabled>
+                                <i class="fas fa-check-circle"></i> Confirm Seats
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <!-- Timer -->
+                <div class="timer">
+                    TIME REMAINING: <span id="countdown">15:00</span>
+                </div>
+                
+                <!-- Basket -->
+                <div class="basket">
+                    <div class="basket-header">
+                        <h4 class="mb-0">YOUR BASKET</h4>
+                        <button class="btn btn-sm btn-outline-danger" id="clearBasketBtn">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    
+                    <div id="basketItems">
+                        <!-- Basket items will be added dynamically -->
+                        <div class="text-center text-muted">No seats selected</div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="basket-item">
+                        <strong>Total Cost</strong>
+                        <strong id="totalCost">₱0.00</strong>
+                    </div>
+                    <div class="text-muted small">(Excl. booking fee)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="bg-dark text-white mt-5 py-3">
+        <div class="container text-center">
+            <p class="mb-0">&copy; 2023 Movie Ticket Booking System. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script th:inline="javascript">
+        $(document).ready(function() {
+            // Get data from Thymeleaf
+            const numberOfSeats = [[${numberOfSeats}]];
+            const ticketPrice = [[${screening.price}]];
+            const movieTitle = [[${screening.movie.title}]];
+            
+            let selectedSeats = [];
+            let totalCost = 0;
+            
+            // Initialize countdown timer
+            let timeLeft = 15 * 60; // 15 minutes in seconds
+            const countdownEl = document.getElementById('countdown');
+            
+            function updateTimer() {
+                const minutes = Math.floor(timeLeft / 60);
+                let seconds = timeLeft % 60;
+                seconds = seconds < 10 ? '0' + seconds : seconds;
+                countdownEl.textContent = minutes + ':' + seconds;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    alert('Your session has expired. Please start over.');
+                    window.location.href = /*[[@{/movies}]]*/ '/movies';
+                }
+                timeLeft--;
+            }
+            
+            updateTimer();
+            const timerInterval = setInterval(updateTimer, 1000);
+            
+            // Seat selection
+            $('.seat.available').click(function() {
+                const seatId = $(this).data('seat-id');
+                const row = $(this).data('row');
+                const column = $(this).data('column');
+                const seatNumber = row + column;
+                
+                if ($(this).hasClass('selected')) {
+                    // Deselect seat
+                    $(this).removeClass('selected');
+                    selectedSeats = selectedSeats.filter(seat => seat.id !== seatId);
+                } else {
+                    // Check if we can select more seats
+                    if (selectedSeats.length >= numberOfSeats) {
+                        alert('You can only select ' + numberOfSeats + ' seat(s)');
+                        return;}
+                    
+                    // Select seat
+                    $(this).addClass('selected');
+                    selectedSeats.push({
+                        id: seatId,
+                        number: seatNumber
+                    });
+                }
+                
+                updateBasket();
+            });
+            
+            // Clear basket
+            $('#clearBasketBtn').click(function() {
+                $('.seat.selected').removeClass('selected');
+                selectedSeats = [];
+                updateBasket();
+            });
+            
+            // Cancel button handler
+            $('#cancelButton').click(function() {
+                window.location.href = /*[[@{/movies}]]*/ '/movies';
+            });
+            
+            // Update basket display
+            function updateBasket() {
+                const basketEl = document.getElementById('basketItems');
+                basketEl.innerHTML = '';
+                
+                if (selectedSeats.length > 0) {
+                    // Add movie title
+                    const movieEl = document.createElement('div');
+                    movieEl.className = 'mb-2';
+                    movieEl.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>${movieTitle}</span>
+                        </div>
+                    `;
+                    basketEl.appendChild(movieEl);
+                    
+                    // Add selected seats
+                    selectedSeats.forEach(seat => {
+                        const seatEl = document.createElement('div');
+                        seatEl.className = 'basket-item';
+                        seatEl.innerHTML = `
+                            <span>Seat ${seat.number}</span>
+                            <span>₱${ticketPrice.toFixed(2)}</span>
+                        `;
+                        basketEl.appendChild(seatEl);
+                    });
+                    
+                    // Update total cost
+                    totalCost = ticketPrice * selectedSeats.length;
+                    document.getElementById('totalCost').textContent = `₱${totalCost.toFixed(2)}`;
+                    
+                    // Enable confirm button if we have selected the required number of seats
+                    document.getElementById('confirmSeatsBtn').disabled = selectedSeats.length !== numberOfSeats;
+                    
+                    // Clear any existing seat inputs
+                    $('#seatSelectionForm').find('input[name="seatIds"]').remove();
+                    
+                    // Add a hidden input for each selected seat
+                    selectedSeats.forEach(seat => {
+                        const input = $('<input>')
+                            .attr('type', 'hidden')
+                            .attr('name', 'seatIds')
+                            .val(seat.id);
+                        $('#seatSelectionForm').append(input);
+                    });
+                } else {
+                    // Empty basket
+                    basketEl.innerHTML = '<div class="text-center text-muted">No seats selected</div>';
+                    document.getElementById('totalCost').textContent = '₱0.00';
+                    document.getElementById('confirmSeatsBtn').disabled = true;
+                    
+                    // Remove any existing seatIds input
+                    $('#seatSelectionForm').find('input[name="seatIds"]').remove();
+                }
+            }
+            
+            // Initialize basket
+            updateBasket();
+            
+            // Form submission handling
+            $('#seatSelectionForm').submit(function(e) {
+                if (selectedSeats.length !== numberOfSeats) {
+                    e.preventDefault();
+                    alert(`Please select exactly ${numberOfSeats} seat(s).`);
+                    return false;
+                }
+                
+                // Make sure we have the seat IDs as hidden inputs
+                if ($('#seatSelectionForm').find('input[name="seatIds"]').length === 0) {
+                    e.preventDefault();
+                    
+                    // Add a hidden input for each selected seat
+                    selectedSeats.forEach(seat => {
+                        const input = $('<input>')
+                            .attr('type', 'hidden')
+                            .attr('name', 'seatIds')
+                            .val(seat.id);
+                        $('#seatSelectionForm').append(input);
+                    });
+                    
+                    // Submit the form
+                    $('#seatSelectionForm')[0].submit();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

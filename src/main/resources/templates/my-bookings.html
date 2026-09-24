@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>My Bookings - Movie Ticket Booking</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <style>
+        .booking-card {
+            transition: transform 0.3s;
+            margin-bottom: 20px;
+        }
+        .booking-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .movie-poster {
+            max-height: 150px;
+            object-fit: cover;
+        }
+        .booking-details {
+            display: flex;
+            flex-direction: column;
+        }
+        .booking-detail {
+            margin-bottom: 8px;
+        }
+        .booking-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+        .empty-bookings {
+            text-align: center;
+            padding: 50px 0;
+        }
+        .empty-bookings i {
+            font-size: 4rem;
+            color: #6c757d;
+            margin-bottom: 20px;
+        }
+        .badge-no-show {
+            background-color: #dc3545;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" th:href="@{/}">Movie Ticket Booking</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/movies}">Movies</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/screenings}">Screenings</a>
+                    </li>
+                    <li class="nav-item active">
+                        <a class="nav-link" th:href="@{/bookings/my-bookings}">My Bookings</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/profile}">My Profile</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/logout}">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Success and Error Messages -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${success}"></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${error}"></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        
+        <div th:if="${warning}" class="alert alert-warning alert-dismissible fade show" role="alert">
+            <span th:text="${warning}"></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        
+        <h1 class="mb-4">My Bookings</h1>
+        
+        <!-- Empty bookings message -->
+        <div th:if="${bookings == null || bookings.isEmpty()}" class="empty-bookings">
+            <i class="fas fa-ticket-alt"></i>
+            <h3>You don't have any bookings yet</h3>
+            <p class="text-muted">Browse our movies and book your tickets now!</p>
+            <a th:href="@{/movies}" class="btn btn-primary mt-3">
+                <i class="fas fa-film"></i> Browse Movies
+            </a>
+        </div>
+        
+        <!-- Bookings List -->
+        <div th:unless="${bookings == null || bookings.isEmpty()}">
+            <!-- Tabs for different booking statuses -->
+            <ul class="nav nav-tabs mb-4" id="bookingTabs" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="all-tab" data-toggle="tab" href="#all" role="tab">
+                        All Bookings
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="upcoming-tab" data-toggle="tab" href="#upcoming" role="tab">
+                        Upcoming
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="past-tab" data-toggle="tab" href="#past" role="tab">
+                        Past
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="cancelled-tab" data-toggle="tab" href="#cancelled" role="tab">
+                        Cancelled
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="no-show-tab" data-toggle="tab" href="#no-show" role="tab">
+                        No-Shows
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="tab-content" id="bookingTabsContent">
+                <!-- All Bookings Tab -->
+                <div class="tab-pane fade show active" id="all" role="tabpanel">
+                    <div class="row">
+                        <div th:each="booking : ${bookings}" class="col-md-6">
+                            <div class="card booking-card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0" th:text="${booking.screening.movie.title}">Movie Title</h5>
+                                    <span th:if="${booking.status == 'CONFIRMED'}" class="badge badge-success">Confirmed</span>
+                                    <span th:if="${booking.status == 'RESERVED'}" class="badge badge-warning">Reserved</span>
+                                    <span th:if="${booking.status == 'CANCELLED'}" class="badge badge-danger">Cancelled</span>
+                                    <span th:if="${booking.status == 'NO_SHOW' || booking.markedAsNoShow == true}" class="badge badge-no-show">No-Show</span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <img th:if="${booking.screening.movie.effectiveImageUrl != null && !booking.screening.movie.effectiveImageUrl.isEmpty()}" 
+                                                 th:src="${booking.screening.movie.effectiveImageUrl}" 
+                                                 class="img-fluid movie-poster" 
+                                                 alt="Movie Poster">
+                                            <div th:unless="${booking.screening.movie.effectiveImageUrl != null && !booking.screening.movie.effectiveImageUrl.isEmpty()}" 
+                                                 class="d-flex justify-content-center align-items-center bg-light movie-poster">
+                                                <i class="fas fa-film fa-3x text-muted"></i>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-8">
+                                            <div class="booking-details">
+                                                <div class="booking-detail">
+                                                    <i class="far fa-calendar-alt mr-2"></i>
+                                                    <span th:if="${booking.screening != null}" 
+                                                          th:text="${#temporals.format(booking.screening.screeningTime, 'EEEE, MMM d, yyyy')}">Date</span>
+                                                </div>
+                                                <div class="booking-detail">
+                                                    <i class="far fa-clock mr-2"></i>
+                                                    <span th:if="${booking.screening != null}" 
+                                                          th:text="${#temporals.format(booking.screening.screeningTime, 'h:mm a')}">Time</span>
+                                                </div>
+                                                <div class="booking-detail">
+                                                    <i class="fas fa-map-marker-alt mr-2"></i>
+                                                    <span th:if="${booking.screening != null}" 
+                                                          th:text="${booking.screening.theater}">Theater</span>
+                                                </div>
+                                                <div class="booking-detail">
+                                                    <i class="fas fa-ticket-alt mr-2"></i>
+                                                    <span th:text="${booking.numberOfSeats + ' Seats'}">Seats</span>
+                                                </div>   <!-- No-Show Status Display -->
+                                                <div class="booking-detail" th:if="${booking.status == 'NO_SHOW' || booking.markedAsNoShow == true}">
+                                                    <i class="fas fa-times-circle mr-2 text-danger"></i>
+                                                    <span class="text-danger font-weight-bold">No-Show</span>
+                                                </div>
+                                                <div class="booking-detail">
+                                                    <i class="fas fa-dollar-sign mr-2"></i>
+                                                    <span th:text="${'₱' + #numbers.formatDecimal(booking.totalPrice, 1, 2)}">₱0.00</span>
+                                                    <span th:if="${booking.paid}" class="badge badge-success ml-2">Paid</span>
+                                                    <span th:unless="${booking.paid}" class="badge badge-warning ml-2">Unpaid</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="booking-actions mt-3">
+                                        <a th:href="@{/bookings/confirmation/{id}(id=${booking.id})}" class="btn btn-outline-primary btn-sm">
+                                            <i class="fas fa-info-circle mr-1"></i> View Details
+                                        </a>
+                                        <!-- Add Cancel button if eligible for cancellation -->
+                                        <a th:if="${booking.status != 'CANCELLED' && booking.status != 'NO_SHOW' && !booking.markedAsNoShow && !booking.paid && booking.screening != null && booking.screening.screeningTime.isAfter(T(java.time.LocalDateTime).now().plusHours(2))}"
+                                           th:href="@{/bookings/cancel/{id}(id=${booking.id})}" 
+                                           class="btn btn-outline-danger btn-sm"
+                                           onclick="return confirm('Are you sure you want to cancel this booking? This action cannot be undone.');">
+                                            <i class="fas fa-times-circle mr-1"></i> Cancel
+                                        </a>
+                                        <!-- Message when booking is paid -->
+                                        <span th:if="${booking.paid && booking.status != 'CANCELLED' && booking.status != 'NO_SHOW' && !booking.markedAsNoShow && booking.screening.screeningTime.isAfter(T(java.time.LocalDateTime).now())}" class="text-muted small">
+                                            <i class="fas fa-info-circle"></i> Paid bookings cannot be cancelled online
+                                        </span>
+                                        <!-- Message when booking is too close to screening time -->
+                                        <span th:if="${!booking.paid && booking.status != 'CANCELLED' && booking.status != 'NO_SHOW' && !booking.markedAsNoShow && !booking.screening.screeningTime.isAfter(T(java.time.LocalDateTime).now().plusHours(2)) && booking.screening.screeningTime.isAfter(T(java.time.LocalDateTime).now())}" 
+                                              class="text-muted small">
+                                            <i class="fas fa-info-circle"></i> Cannot cancel within 2 hours of screening
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Upcoming Bookings Tab -->
+                <div class="tab-pane fade" id="upcoming" role="tabpanel">
+                    <div class="row">
+                        <div th:each="booking : ${bookings}" 
+                             th:if="${booking.status != 'CANCELLED' && booking.status != 'NO_SHOW' && !booking.markedAsNoShow && booking.screening.screeningTime.isAfter(T(java.time.LocalDateTime).now())}" 
+                             class="col-md-6">
+                            <div class="card booking-card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0" th:text="${booking.screening.movie.title}">Movie Title</h5>
+                                    <span th:if="${booking.status == 'CONFIRMED'}" class="badge badge-success">Confirmed</span>
+                                    <span th:if="${booking.status == 'RESERVED'}" class="badge badge-warning">Reserved</span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <img th:if="${booking.screening.movie.effectiveImageUrl != null && !booking.screening.movie.effectiveImageUrl.isEmpty()}" 
+                                                 th:src="${booking.screening.movie.effectiveImageUrl}" 
+                                                 class="img-fluid movie-poster" 
+                                                 alt="Movie Poster">
+                                            <div th:unless="${booking.screening.movie.effectiveImageUrl != null && !booking.screening.movie.effectiveImageUrl.isEmpty()}" 
+                                                 class="d-flex justify-content-center align-items-center bg-light movie-poster">
+                                                <i class="fas fa-film fa-3x text-muted"></i>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-8">
+                                            <div class="booking-details">
+                                                <div class="booking-detail">
+                                                    <i class="far fa-calendar-alt mr-2"></i>
+                                                    <span th:text="${#temporals.format(booking.screening.screeningTime, 'EEEE, MMM d, yyyy')}">Monday, Jan 1, 2023</span>
+                                                </div>
+                                                <div class="booking-detail">
+                                                    <i class="far fa-clock mr-2"></i>
+                                                    <span th:text="${#temporals.format(booking.screening.screeningTime, 'h:mm a')}">2:00 PM</span>
+                                                </div>
+                                                <div class="booking-detail">
+                                                    <i class="fas fa-map-marker-alt mr-2"></i>
+                                                    <span th:text="${booking.screening.theater}">Theater 1</span>
+                                                </div>
+                                                <div class="booking-detail">
+                                                    <i class="fas fa-ticket-alt mr-2"></i>
+                                                    <span th:text="${booking.numberOfSeats + ' Seats'}">2 Seats</span>
+                                                </div>
+                                                <div class="booking-detail">
+                                                    <i class="fas fa-dollar-sign mr-2"></i>
+                                                    <span th:text="${'₱' + #numbers.formatDecimal(booking.totalPrice, 1, 2)}">₱20.00</span>
+                                                    <span th:if="${booking.paid}" class="badge badge-success ml-2">Paid</span>
+                                                    <span th:unless="${booking.paid}" class="badge badge-warning ml-2">Unpaid</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="booking-actions mt-3">
+                                        <a th:href="@{/bookings/confirmation/{id}(id=${booking.id})}" class="btn btn-outline-primary btn-sm">
+                                            <i class="fas fa-info-circle"></i> View Details
+                                        </a>
+                                        <!-- Updated Cancel button with payment status check -->
+                                        <a th:if="${!booking.paid && booking.screening.screeningTime.isAfter(T(java.time.LocalDateTime).now().plusHours(2))}"
+                                           th:href="@{/bookings/cancel/{id}(id=${booking.id})}" 
+                                           class="btn btn-outline-danger btn-sm"
+                                           onclick="return confirm('Are you sure you want to cancel this booking? This action cannot be undone.');">
+                                            <i class="fas fa-times-circle"></i> Cancel
+                                        </a>
+                                        <!-- Message when booking is paid -->
+                                        <span th:if="${booking.paid}" class="text-muted small">
+                                            <i class="fas fa-info-circle"></i> Paid bookings cannot be cancelled online
+                                        </span>
+                                        <!-- Message when booking is too close to screening time -->
+                                        <span th:if="${!booking.paid && !booking.screening.screeningTime.isAfter(T(java.time.LocalDateTime).now().plusHours(2))}" 
+                                              class="text-muted small">
+                                            <i class="fas fa-info-circle"></i> Cannot cancel within 2 hours of screening
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Check if there are any upcoming bookings -->
+                        <div th:if="${#lists.isEmpty(bookings.?[status != 'CANCELLED' && status != 'NO_SHOW' && markedAsNoShow != true && screening.screeningTime.isAfter(T(java.time.LocalDateTime).now())])}" class="col-12">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i> You don't have any upcoming bookings.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Past Bookings Tab -->
+                <div class="tab-pane fade" id="past" role="tabpanel">
+                    <div class="row">
+                        <div th:each="booking : ${bookings}" 
+                             th:if="${booking.status != 'CANCELLED' && booking.status != 'NO_SHOW' && !booking.markedAsNoShow && booking.screening.screeningTime.isBefore(T(java.time.LocalDateTime).now())}" 
+                             class="col-md-6">
+                            <div class="card booking-card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0" th:text="${booking.screening.movie.title}">Movie Title</h5>
+                                    <span class="badge badge-info">Completed</span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <img th:if="${booking.screening.movie.effectiveImageUrl != null && !booking.screening.movie.effectiveImageUrl.isEmpty()}" 
+                                                 th:src="${booking.screening.movie.effectiveImageUrl}" 
+                                                 class="img-fluid movie-poster" 
+                                                 alt="Movie Poster">
+                                            <div th:unless="${booking.screening.movie.effectiveImageUrl != null && !booking.screening.movie.effectiveImageUrl.isEmpty()}" 
+                                                 class="d-flex justify-content-center align-items-center bg-light movie-poster">
+                                                <i class="fas fa-film fa-3x text-muted"></i>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-8">
+                                            <div class="booking-details">
+                                                <div class="booking-detail">
+                                                    <i class="far fa-calendar-alt mr-2"></i>
+                                                    <span th:text="${#temporals.format(booking.screening.screeningTime, 'EEEE, MMM d, yyyy')}">Monday, Jan 1, 2023</span>
+                                                </div>
+                                                <div class="booking-detail">
+                                                    <i class="far fa-clock mr-2"></i>
+                                                    <span th:text="${#temporals.format(booking.screening.screeningTime, 'h:mm a')}">2:00 PM</span>
+                                                </div>
+                                                <div class="booking-detail">
+                                                    <i class="fas fa-map-marker-alt mr-2"></i>
+                                                    <span th:text="${booking.screening.theater}">Theater 1</span>
+                                                </div>
+                                                <div class="booking-detail">
+                                                    <i class="fas fa-ticket-alt mr-2"></i>
+                                                    <span th:text="${booking.numberOfSeats + ' Seats'}">2 Seats</span>
+                                                </div> <div class="booking-detail">
+                                                    <i class="fas fa-dollar-sign mr-2"></i>
+                                                    <span th:text="${'₱' + #numbers.formatDecimal(booking.totalPrice, 1, 2)}">₱20.00</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="booking-actions mt-3">
+                                        <a th:href="@{/bookings/confirmation/{id}(id=${booking.id})}" class="btn btn-outline-primary btn-sm">
+                                            <i class="fas fa-info-circle"></i> View Details
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Check if there are any past bookings -->
+                        <div th:if="${#lists.isEmpty(bookings.?[status != 'CANCELLED' && status != 'NO_SHOW' && markedAsNoShow != true && screening.screeningTime.isBefore(T(java.time.LocalDateTime).now())])}" class="col-12">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i> You don't have any past bookings.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Cancelled Bookings Tab -->
+                <div class="tab-pane fade" id="cancelled" role="tabpanel">
+                    <div class="row">
+                        <div th:each="booking : ${bookings}" 
+                             th:if="${booking.status == 'CANCELLED'}" 
+                             class="col-md-6">
+                            <div class="card booking-card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0" th:text="${booking.screening.movie.title}">Movie Title</h5>
+                                    <span class="badge badge-danger">Cancelled</span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <img th:if="${booking.screening.movie.effectiveImageUrl != null && !booking.screening.movie.effectiveImageUrl.isEmpty()}" 
+                                                 th:src="${booking.screening.movie.effectiveImageUrl}" 
+                                                 class="img-fluid movie-poster" 
+                                                 alt="Movie Poster">
+                                            <div th:unless="${booking.screening.movie.effectiveImageUrl != null && !booking.screening.movie.effectiveImageUrl.isEmpty()}" 
+                                                 class="d-flex justify-content-center align-items-center bg-light movie-poster">
+                                                <i class="fas fa-film fa-3x text-muted"></i>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-8">
+                                            <div class="booking-details">
+                                                <div class="booking-detail">
+                                                    <i class="far fa-calendar-alt mr-2"></i>
+                                                    <span th:text="${#temporals.format(booking.screening.screeningTime, 'EEEE, MMM d, yyyy')}">Monday, Jan 1, 2023</span>
+                                                </div>
+                                                <div class="booking-detail">
+                                                    <i class="far fa-clock mr-2"></i>
+                                                    <span th:text="${#temporals.format(booking.screening.screeningTime, 'h:mm a')}">2:00 PM</span>
+                                                </div>
+                                                <div class="booking-detail">
+                                                    <i class="fas fa-map-marker-alt mr-2"></i>
+                                                    <span th:text="${booking.screening.theater}">Theater 1</span>
+                                                </div>
+                                                <div class="booking-detail">
+                                                    <i class="fas fa-ticket-alt mr-2"></i>
+                                                    <span th:text="${booking.numberOfSeats + ' Seats'}">2 Seats</span>
+                                                </div>
+                                                <div class="booking-detail">
+                                                    <i class="fas fa-dollar-sign mr-2"></i>
+                                                    <span th:text="${'₱' + #numbers.formatDecimal(booking.totalPrice, 1, 2)}">₱20.00</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="booking-actions mt-3">
+                                        <a th:href="@{/bookings/confirmation/{id}(id=${booking.id})}" class="btn btn-outline-primary btn-sm">
+                                            <i class="fas fa-info-circle"></i> View Details
+                                        </a>
+                                        <a th:href="@{/movies/book/{id}(id=${booking.screening.movie.id})}" class="btn btn-outline-success btn-sm">
+                                            <i class="fas fa-redo"></i> Book Again
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Check if there are any cancelled bookings -->
+                        <div th:if="${#lists.isEmpty(bookings.?[status == 'CANCELLED'])}" class="col-12">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i> You don't have any cancelled bookings.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- No-Show Bookings Tab -->
+                <div class="tab-pane fade" id="no-show" role="tabpanel">
+                    <div class="row">
+                        <div th:each="booking : ${bookings}" 
+                             th:if="${booking.status == 'NO_SHOW' || booking.markedAsNoShow == true}" 
+                             class="col-md-6">
+                            <div class="card booking-card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0" th:text="${booking.screening.movie.title}">Movie Title</h5>
+                                    <span class="badge badge-no-show">No-Show</span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <img th:if="${booking.screening.movie.effectiveImageUrl != null && !booking.screening.movie.effectiveImageUrl.isEmpty()}" 
+                                                 th:src="${booking.screening.movie.effectiveImageUrl}" 
+                                                 class="img-fluid movie-poster" 
+                                                 alt="Movie Poster">
+                                            <div th:unless="${booking.screening.movie.effectiveImageUrl != null && !booking.screening.movie.effectiveImageUrl.isEmpty()}" 
+                                                 class="d-flex justify-content-center align-items-center bg-light movie-poster">
+                                                <i class="fas fa-film fa-3x text-muted"></i>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-8">
+                                            <div class="booking-details">
+                                                <div class="booking-detail">
+                                                    <i class="far fa-calendar-alt mr-2"></i>
+                                                    <span th:text="${#temporals.format(booking.screening.screeningTime, 'EEEE, MMM d, yyyy')}">Monday, Jan 1, 2023</span>
+                                                </div>
+                                                <div class="booking-detail">
+                                                    <i class="far fa-clock mr-2"></i>
+                                                    <span th:text="${#temporals.format(booking.screening.screeningTime, 'h:mm a')}">2:00 PM</span>
+                                                </div>
+                                                <div class="booking-detail">
+                                                    <i class="fas fa-map-marker-alt mr-2"></i>
+                                                    <span th:text="${booking.screening.theater}">Theater 1</span>
+                                                </div>
+                                                <div class="booking-detail">
+                                                    <i class="fas fa-ticket-alt mr-2"></i>
+                                                    <span th:text="${booking.numberOfSeats + ' Seats'}">2 Seats</span>
+                                                </div>
+                                                <div class="booking-detail">
+                                                    <i class="fas fa-times-circle mr-2 text-danger"></i>
+                                                    <span class="text-danger font-weight-bold">No-Show</span>
+                                                </div>
+                                                <div class="booking-detail">
+                                                    <i class="fas fa-dollar-sign mr-2"></i>
+                                                    <span th:text="${'₱' + #numbers.formatDecimal(booking.totalPrice, 1, 2)}">₱20.00</span>
+                                                    <span th:if="${booking.paid}" class="badge badge-success ml-2">Paid</span>
+                                                    <span th:unless="${booking.paid}" class="badge badge-warning ml-2">Unpaid</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="booking-actions mt-3">
+                                        <a th:href="@{/bookings/confirmation/{id}(id=${booking.id})}" class="btn btn-outline-primary btn-sm">
+                                            <i class="fas fa-info-circle"></i> View Details
+                                        </a>
+                                        <a th:href="@{/movies/book/{id}(id=${booking.screening.movie.id})}" class="btn btn-outline-success btn-sm">
+                                            <i class="fas fa-redo"></i> Book Again
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>  </div>
+                        <!-- Check if there are any no-show bookings -->
+                        <div th:if="${#lists.isEmpty(bookings.?[status == 'NO_SHOW' || markedAsNoShow == true])}" class="col-12">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i> You don't have any no-show bookings.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="bg-dark text-white mt-5 py-3">
+        <div class="container text-center">
+            <p class="mb-0">&copy; 2023 Movie Ticket Booking System. All rights reserved.</p>
+        </div>
+    </footer>
+    
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        // Auto-dismiss alerts after 5 seconds
+        $(document).ready(function() {
+            setTimeout(function() {
+                $('.alert').alert('close');
+            }, 5000);
+        });
+    </script>
+</body>
+</html>

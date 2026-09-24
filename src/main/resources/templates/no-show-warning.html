@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>No-Show Warning</title>
+</head>
+<body>
+    <!-- No-Show Warning Fragment -->
+    <div th:fragment="no-show-warning" class="mb-4">
+        <!-- No-Show Warning Alert -->
+        <div th:if="${noShowWarning}" th:class="'alert alert-' + ${noShowWarningLevel} + ' alert-dismissible fade show'" role="alert">
+            <div class="d-flex">
+                <div class="mr-3">
+                    <i class="fas fa-exclamation-triangle fa-2x"></i>
+                </div>
+                <div>
+                    <h5 class="alert-heading">No-Show Warning</h5>
+                    <p th:text="${noShowWarning}">Warning message</p>
+                    
+                    <!-- Blocked User Message -->
+                    <div th:if="${userBlocked}" class="mt-2">
+                        <strong>Your account is blocked.</strong>
+                        <p th:if="${blockReason}" th:text="${blockReason}">Block reason</p>
+                        <p>Please contact customer support for assistance.</p>
+                    </div>
+                    
+                    <!-- Temporarily Blocked User Message -->
+                    <div th:if="${userTempBlocked}" class="mt-2">
+                        <strong>Your account is temporarily restricted until:</strong>
+                        <p th:text="${#temporals.format(blockedUntil, 'EEEE, MMMM d, yyyy')}">Date</p>
+                    </div>
+                    
+                    <!-- No-Show Count Badge -->
+                    <div class="mt-2">
+                        <span class="badge badge-pill" 
+                              th:classappend="${noShowCount == 1 ? 'badge-warning' : (noShowCount == 2 ? 'badge-danger' : 'badge-dark')}"
+                              th:text="'No-Shows: ' + ${noShowCount}">No-Shows: 0</span>
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    </div>
+</body>
+</html>

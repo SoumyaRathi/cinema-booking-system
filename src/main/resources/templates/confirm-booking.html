@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirm Booking - Movie Ticket Booking</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" th:href="@{/}">Movie Ticket Booking</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/movies}">Movies</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/bookings/my-bookings}">My Bookings</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/profile}">My Profile</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/logout}">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+ 
+    <div class="container mt-4">
+        <!-- Booking Progress -->
+        <div class="booking-progress">
+            <div class="booking-step completed">1. Select Movie</div>
+            <div class="booking-step completed">2. Select Seats</div>
+            <div class="booking-step active">3. Confirm Booking</div>
+            <div class="booking-step">4. Payment</div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-8">
+                <h2 class="mb-4">CONFIRM YOUR BOOKING</h2>
+                
+                <!-- Movie Info -->
+                <div class="movie-info">
+                    <img th:if="${screening.movie.effectiveImageUrl != null && !screening.movie.effectiveImageUrl.isEmpty()}" 
+                         th:src="${screening.movie.effectiveImageUrl}" 
+                         class="movie-poster" 
+                         alt="Movie Poster">
+                    <img th:unless="${screening.movie.effectiveImageUrl != null && !screening.movie.effectiveImageUrl.isEmpty()}" 
+                         th:src="@{/images/default-movie.jpg}" 
+                         class="movie-poster" 
+                         alt="Default Movie Poster">
+                    <div class="movie-details">
+                        <h3 th:text="${screening.movie.title}">Movie Title</h3>
+                        <p>
+                            Showing on <span th:text="${#temporals.format(screening.screeningTime, 'EEE dd MMM')}">Mon 21 Apr</span> 
+                            <span th:text="${#temporals.format(screening.screeningTime, 'h:mm a')}">2:00PM</span><br>
+                            <span th:text="${screening.theater}">Cinema 2</span>
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Seat Summary -->
+                <div class="seat-summary">
+                    <h4 class="mb-3">YOUR SEATS</h4>
+                    
+                    <!-- Display seats in a simple list -->
+                    <div th:if="${seats != null && !seats.isEmpty()}" class="seat-list">
+                        <span class="seat-tag" th:each="seat : ${seats}" th:text="${seat.row + seat.seatColumn}">A1</span>
+                    </div>
+                    
+                    <!-- No seats message -->
+                    <div th:if="${seats == null || seats.isEmpty()}" class="alert alert-warning">
+                        No seats selected. Please go back and select seats.
+                    </div>
+                </div>
+                
+                <!-- Payment Summary -->
+                <div class="payment-summary">
+                    <h4 class="mb-3">PAYMENT SUMMARY</h4>
+                    
+                    <div class="summary-item">
+                        <span>Tickets (<span th:text="${seats != null ? seats.size() : 0}">2</span>)</span>
+                        <span th:text="${'₱' + #numbers.formatDecimal(booking.totalPrice, 0, 'COMMA', 2, 'POINT')}">₱500.00</span>
+                    </div>
+                    
+                    <div class="summary-item">
+                        <span>Booking Fee</span>
+                        <span>₱30.00</span>
+                    </div>
+                    
+                    <div class="summary-item summary-total">
+                        <span>Total</span>
+                        <span th:text="${'₱' + #numbers.formatDecimal(booking.totalPrice + 30.00, 0, 'COMMA', 2, 'POINT')}">₱530.00</span>
+                    </div>
+                </div>
+                
+                <!-- Payment Method - Pay at Counter Only -->
+                <div class="payment-method">
+                    <div class="d-flex align-items-center">
+                        <span class="payment-method-icon"><i class="fas fa-store"></i></span>
+                        <div>
+                            <h5>Pay at Counter</h5>
+                            <p class="mb-0 text-muted">Pay at the cinema counter before the show</p>
+                        </div>
+                    </div>
+                    <div class="payment-details">
+                        <p>You will need to pay at the cinema counter at least 30 minutes before the show starts.</p>
+                        <p>Please bring your booking confirmation code or show the email confirmation.</p>
+                        <p class="warning-text">Important: Your reservation will expire if not paid 15 minutes before showtime.</p>
+                    </div>
+                </div>
+                
+                <div class="rules-box">
+                    <div class="rules-title">Pay at Counter Rules</div>
+                    <ul class="rules-list">
+                        <li>You must arrive at the cinema and pay at least 30 minutes before showtime.</li>
+                        <li>If not paid 15 minutes before showtime, your booking will be automatically canceled, and seats will be released.</li>
+                        <li>Repeated no-shows may result in temporary or permanent restrictions on your account.</li>
+                        <li>First no-show: Warning notice</li>
+                        <li>Second no-show: 7-day booking ban</li>
+                        <li>Third no-show: Permanent block from online booking (must buy walk-in only)</li>
+                    </ul>
+                </div>
+                
+                <form th:action="@{/bookings/process-payment}" method="post" id="paymentForm" class="mt-4">
+                    <input type="hidden" name="bookingId" th:value="${booking.id}">
+                    <input type="hidden" name="paymentMethod" value="PAY_AT_COUNTER">
+                    
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="termsCheck" required>
+                            <label class="form-check-label" for="termsCheck">
+                                I agree to the <a href="#" data-toggle="modal" data-target="#termsModal">Terms and Conditions</a>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="fas fa-check-circle"></i> Complete Booking
+                        </button>
+                        <a th:href="@{/bookings/cancel-reservation/{id}(id=${booking.id})}" class="btn btn-danger btn-lg ml-2">
+                            <i class="fas fa-times"></i> Cancel Reservation
+                        </a>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="col-md-4">
+                <!-- Timer -->
+                <div class="timer">
+                    TIME REMAINING: <span id="countdown">10:00</span>
+                </div>
+                
+                <!-- Booking Summary -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h4 class="mb-0">BOOKING SUMMARY</h4>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Movie:</strong> <span th:text="${screening.movie.title}">Movie Title</span></p>
+                        <p><strong>Date:</strong> <span th:text="${#temporals.format(screening.screeningTime, 'EEE dd MMM yyyy')}">Mon 21 Apr 2023</span></p>
+                        <p><strong>Time:</strong> <span th:text="${#temporals.format(screening.screeningTime, 'h:mm a')}">2:00PM</span></p>
+                        <p><strong>Theater:</strong> <span th:text="${screening.theater}">Cinema 2</span></p>
+                        <p><strong>Seats:</strong> 
+                            <span th:if="${seats != null && !seats.isEmpty()}">
+                                <span th:each="seat, iterStat : ${seats}">
+                                    <span th:text="${seat.row + seat.seatColumn}">A1</span>
+                                    <span th:if="${!iterStat.last}">, </span>
+                                </span>
+                            </span>
+                            <span th:if="${seats == null || seats.isEmpty()}">None selected</span>
+                        </p>
+                        <p><strong>Confirmation Code:</strong> <span th:text="${booking.confirmationCode}">ABC123</span></p>
+                    </div>
+                </div>
+                 
+                <!-- Help Info -->
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="mb-0">NEED HELP?</h4>
+                    </div>
+                    <div class="card-body">
+                        <p>If you need assistance with your booking, please contact our customer support:</p>
+                        <p><i class="fas fa-phone"></i> +63 123 456 7890</p>
+                        <p><i class="fas fa-envelope"></i> support@movieticket.com</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Terms and Conditions Modal -->
+    <div class="modal fade" id="termsModal" tabindex="-1" role="dialog" aria-labelledby="termsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="termsModalLabel">Terms and Conditions</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <h6>Booking Terms</h6>
+                    <p>By completing this booking, you agree to the following terms:</p>
+                    <ul>
+                        <li>Tickets are non-refundable once purchased.</li>
+                        <li>Tickets can be exchanged or rescheduled up to 24 hours before the screening time, subject to availability.</li>
+                        <li>You must arrive at least 15 minutes before the screening time.</li>
+                        <li>Outside food and beverages are not allowed in the theater.</li>
+                        <li>The management reserves the right to refuse entry if terms are violated.</li>
+                    </ul>
+                    
+                    <h6>Payment Terms</h6>
+                    <p>All payments are processed securely. For cash payments, you must collect your tickets at least 30 minutes before the screening time.</p>
+                    
+                    <h6>Privacy Policy</h6>
+                    <p>Your personal information will be handled in accordance with our privacy policy. We may use your contact information to send you updates about your booking or promotional offers.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="bg-dark text-white mt-5 py-3">
+        <div class="container text-center">
+            <p class="mb-0">&copy; 2023 Movie Ticket Booking System. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script th:src="@{/js/script.js}"></script>
+    
+    <script th:inline="javascript">
+        // Initialize countdown timer
+        $(document).ready(function() {
+            let timeLeft = 10 * 60; // 10 minutes in seconds
+            const countdownEl = document.getElementById('countdown');
+            
+            function updateTimer() {
+                const minutes = Math.floor(timeLeft / 60);
+                let seconds = timeLeft % 60;
+                seconds = seconds < 10 ? '0' + seconds : seconds;
+                countdownEl.textContent = minutes + ':' + seconds;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    alert('Your session has expired. Please start over.');
+                    window.location.href = '/movies';
+                }
+                timeLeft--;
+            }
+            
+            updateTimer();
+            const timerInterval = setInterval(updateTimer, 1000);
+        });
+    </script>
+</body>
+</html>

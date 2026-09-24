@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Booking Cancellation Confirmation</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div class="container-email">
+        <div class="header-email">
+            <h1>Booking Cancellation Confirmation</h1>
+        </div>
+        <div class="content-email">
+            <p>Dear <span th:text="${user.firstName}">User</span>,</p>
+            
+            <p>Your booking has been <span class="highlight">successfully cancelled</span>. Here are the details of your cancelled booking:</p>
+            
+            <div class="booking-details-email">
+                <p><strong>Confirmation Code:</strong> <span th:text="${booking.confirmationCode}">ABC123</span></p>
+                <p><strong>Movie:</strong> <span th:text="${movie.title}">Movie Title</span></p>
+                <p><strong>Date:</strong> <span th:text="${#temporals.format(screening.screeningTime, 'EEEE, MMMM d, yyyy')}">Monday, January 1, 2023</span></p>
+                <p><strong>Time:</strong> <span th:text="${#temporals.format(screening.screeningTime, 'h:mm a')}">7:00 PM</span></p>
+                <p><strong>Theater:</strong> <span th:text="${screening.cinema.name}">Theater 1</span></p>
+                <p><strong>Number of Seats:</strong> <span th:text="${booking.numberOfSeats}">2</span></p>
+                <p><strong>Total Amount:</strong> ₱<span th:text="${#numbers.formatDecimal(booking.totalAmount, 1, 2)}">200.00</span></p>
+                <p><strong>Cancellation Time:</strong> <span th:text="${#temporals.format(T(java.time.LocalDateTime).now(), 'EEEE, MMMM d, yyyy h:mm a')}">Monday, January 1, 2023 7:00 PM</span></p>
+            </div>
+            
+            <p>The seats you reserved have been released and are now available for other customers.</p>
+            
+            <p>If you have any questions or need further assistance, please don't hesitate to contact us.</p>
+            
+            <p>Thank you for using our service!</p>
+            
+            <p>Best regards,<br>
+            Movie Ticket Booking Team</p>
+        </div>
+        <div class="footer-email">
+            <p>This is an automated email. Please do not reply to this message.</p>
+            <p>&copy; <span th:text="${#temporals.format(#temporals.createNow(), 'yyyy')}">2023</span> Movie Ticket Booking System. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

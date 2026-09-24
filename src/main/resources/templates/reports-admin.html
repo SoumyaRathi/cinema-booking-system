@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Reports</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style th:replace="notification-fragment :: notification-styles"></style>
+    <style>
+        .report-card {
+            transition: transform 0.3s;
+            height: 100%;
+            margin-bottom: 20px;
+        }
+        .report-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .report-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-2 bg-dark text-white p-0" style="min-height: 100vh;">
+                <div class="p-4">
+                    <h4>Admin Panel</h4>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a th:href="@{/admin/dashboard}" class="list-group-item list-group-item-action bg-dark text-white">Dashboard</a>
+                    <a th:href="@{/admin/movies}" class="list-group-item list-group-item-action bg-dark text-white">Movies</a>
+                    <a th:href="@{/admin/users}" class="list-group-item list-group-item-action bg-dark text-white">Users</a>
+                    <a th:href="@{/admin/bookings}" class="list-group-item list-group-item-action bg-dark text-white">Bookings</a>
+                    <a th:href="@{/admin/no-shows}" class="list-group-item list-group-item-action bg-dark text-white">No-Shows</a>
+                    <a th:href="@{/admin/reports}" class="list-group-item list-group-item-action bg-dark text-white active">Reports</a>
+                    <a th:href="@{/admin/notifications}" class="list-group-item list-group-item-action bg-dark text-white">
+                        Notifications
+                        <span th:if="${unreadNotificationsCount > 0}" class="badge badge-danger ml-2" th:text="${unreadNotificationsCount}">0</span>
+                    </a>
+                    <a th:href="@{/admin/profile}" class="list-group-item list-group-item-action bg-dark text-white">Profile</a>
+                    <a th:href="@{/logout}" class="list-group-item list-group-item-action bg-dark text-white">Logout</a>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-10 p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2>Reports Dashboard</h2>
+                    <div th:replace="notification-fragment :: notification-bell"></div>
+                </div>
+                
+                <div class="alert alert-info mb-4">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    Select a report type below to view detailed analytics and insights.
+                </div>
+                
+                <div class="row">
+                    <!-- Total Sales Report -->
+                    <div class="col-md-4">
+                        <div class="card report-card">
+                            <div class="card-body text-center">
+                                <div class="report-icon">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <h4 class="card-title">Total Sales</h4>
+                                <p class="card-text">View comprehensive sales data and revenue trends.</p>
+                                <a th:href="@{/admin/reports/total-sales}" class="btn btn-primary">View Report</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Sales by Movie Report -->
+                    <div class="col-md-4">
+                        <div class="card report-card">
+                            <div class="card-body text-center">
+                                <div class="report-icon">
+                                    <i class="fas fa-film"></i>
+                                </div>
+                                <h4 class="card-title">Sales by Movie</h4>
+                                <p class="card-text">Analyze revenue performance by individual movies.</p>
+                                <a th:href="@{/admin/reports/sales-by-movie}" class="btn btn-primary">View Report</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Daily/Monthly Sales Report -->
+                    <div class="col-md-4">
+                        <div class="card report-card">
+                            <div class="card-body text-center">
+                                <div class="report-icon">
+                                    <i class="fas fa-calendar-alt"></i>
+                                </div>
+                                <h4 class="card-title">Daily/Monthly Sales</h4>
+                                <p class="card-text">Track sales performance over time periods.</p>
+                                <a th:href="@{/admin/reports/daily-monthly-sales}" class="btn btn-primary">View Report</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Popular Movies Report -->
+                    <div class="col-md-4">
+                        <div class="card report-card">
+                            <div class="card-body text-center">
+                                <div class="report-icon">
+                                    <i class="fas fa-star"></i>
+                                </div>
+                                <h4 class="card-title">Popular Movies</h4>
+                                <p class="card-text">Discover which movies are attracting the most viewers.</p>
+                                <a th:href="@{/admin/reports/popular-movies}" class="btn btn-primary">View Report</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Top Grossing Movie Report -->
+                    <div class="col-md-4">
+                        <div class="card report-card">
+                            <div class="card-body text-center">
+                                <div class="report-icon">
+                                    <i class="fas fa-dollar-sign"></i>
+                                </div>
+                                <h4 class="card-title">Top Grossing Movie</h4>
+                                <p class="card-text">View the movies that have earned the most money (revenue).</p>
+                                <a th:href="@{/admin/reports/top-grossing-movie}" class="btn btn-primary">View Report</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Most Watched Movie Report -->
+                    <div class="col-md-4">
+                        <div class="card report-card">
+                            <div class="card-body text-center">
+                                <div class="report-icon">
+                                    <i class="fas fa-ticket-alt"></i>
+                                </div>
+                                <h4 class="card-title">Most Watched Movie</h4>
+                                <p class="card-text">Discover the all-time most watched movies in your theaters.</p>
+                                <a th:href="@{/admin/reports/most-watched-movie}" class="btn btn-primary">View Report</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Back to Dashboard Button -->
+                <div class="mt-4">
+                    <a th:href="@{/admin/dashboard}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left mr-2"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script th:replace="notification-fragment :: notification-scripts"></script>
+</body>
+</html>

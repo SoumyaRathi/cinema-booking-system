@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${screeningDate != null ? 'Screenings for ' + #temporals.format(screeningDate, 'MMMM d, yyyy') : 'Screenings by Date'}">Screenings by Date</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <style>
+        .movie-card {
+            margin-bottom: 30px;
+            transition: transform 0.3s;
+        }
+        .movie-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .movie-poster {
+            height: 200px;
+            object-fit: cover;
+        }
+        .time-slot {
+            display: inline-block;
+            margin: 5px;
+            padding: 10px 15px;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .time-slot:hover {
+            background-color: #007bff;
+            color: white;
+        }
+        .time-slot.sold-out {
+            background-color: #e9ecef;
+            color: #adb5bd;
+            cursor: not-allowed;
+            text-decoration: line-through;
+        }
+        .date-picker {
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" th:href="@{/}">Movie Ticket Booking</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/movies}">Movies</a>
+                    </li>
+                    <li class="nav-item active">
+                        <a class="nav-link" th:href="@{/screenings}">Screenings</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/bookings/my-bookings}">My Bookings</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/profile}">My Profile</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/logout}">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Success and Error Messages -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${success}"></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${error}"></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        
+        <h1 class="mb-4" th:text="${screeningDate != null ? 'Screenings for ' + #temporals.format(screeningDate, 'EEEE, MMMM d, yyyy') : 'Screenings by Date'}">Screenings by Date</h1>
+        
+        <!-- Date Picker -->
+        <div class="date-picker">
+            <form action="#" method="get" class="form-inline">
+                <div class="form-group mr-2">
+                    <label for="date" class="mr-2">Select Date:</label>
+                    <input type="date" id="date" name="date" class="form-control" 
+                           th:value="${screeningDate != null ? screeningDate : today}" 
+                           min="${today}">
+                </div>
+                <button type="submit" class="btn btn-primary">Show Screenings</button>
+            </form>
+        </div>
+        
+        <!-- No screenings message -->
+        <div th:if="${screenings == null || screenings.isEmpty()}" class="alert alert-info">
+            <i class="fas fa-info-circle"></i> No screenings available for this date. Please select another date.
+        </div>
+        
+        <!-- Screenings by Movie -->
+        <div th:unless="${screenings == null || screenings.isEmpty()}">
+            <div th:if="${screeningsByMovie != null}" class="row">
+                <div th:each="movieEntry : ${screeningsByMovie}" class="col-md-6 col-lg-4 mb-4">
+                    <div class="card movie-card h-100">
+                        <!-- Check if movie is not null before accessing its properties -->
+                        <div th:if="${movieEntry.key != null}">
+                            <img th:if="${movieEntry.key.imageUrl != null && !movieEntry.key.imageUrl.isEmpty()}" 
+                                 th:src="${movieEntry.key.imageUrl}" 
+                                 class="card-img-top movie-poster" 
+                                 th:alt="${movieEntry.key.title}">
+                            <div th:unless="${movieEntry.key.imageUrl != null && !movieEntry.key.imageUrl.isEmpty()}" 
+                                 class="card-img-top movie-poster d-flex justify-content-center align-items-center bg-light">
+                                <i class="fas fa-film fa-3x text-muted"></i>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title" th:text="${movieEntry.key.title}">Movie Title</h5>
+                                <p class="card-text">
+                                    <span th:if="${movieEntry.key.duration != null}" th:text="${movieEntry.key.duration + ' min'}">120 min</span>
+                                    <span th:if="${movieEntry.key.genre != null && !movieEntry.key.genre.isEmpty()}" th:text="${' | ' + movieEntry.key.genre}"> | Action</span>
+                                </p>
+                                
+                                <!-- Group screenings by cinema -->
+                                <div th:with="screeningsByCinema=${movieEntry.value.stream().collect(T(java.util.stream.Collectors).groupingBy(screening -> screening.getCinema()))}">
+                                    <div th:each="cinemaEntry : ${screeningsByCinema}" class="mb-3">
+                                        <div class="font-weight-bold" th:text="${cinemaEntry.key != null ? cinemaEntry.key.name : 'Unknown Cinema'}">Cinema Name</div>
+                                        
+                                        <div class="time-slots">
+                                            <a th:each="screening : ${cinemaEntry.value}" 
+                                               th:href="${screening.availableSeats > 0 ? '/bookings/screening/' + screening.id : '#'}"
+                                               th:class="${screening.availableSeats > 0 ? 'time-slot' : 'time-slot sold-out'}"
+                                               th:title="${screening.availableSeats > 0 ? screening.availableSeats + ' seats available' : 'Sold out'}">
+                                                <span th:text="${#temporals.format(screening.screeningTime, 'h:mm a')}">2:00 PM</span>
+                                                <small th:if="${screening.theater != null}" th:text="${' - ' + screening.theater}"> - Theater 1</small>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-white">
+                                <a th:href="@{/movies/{id}(id=${movieEntry.key.id})}" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-info-circle"></i> Movie Details
+                                </a>
+                            </div>
+                        </div>
+                        <!-- Fallback for null movie -->
+                        <div th:unless="${movieEntry.key != null}" class="card-body">
+                            <h5 class="card-title text-muted">Unknown Movie</h5>
+                            <p class="card-text text-muted">Movie information not available</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="bg-dark text-white mt-5 py-3">
+        <div class="container text-center">
+            <p class="mb-0">&copy; 2023 Movie Ticket Booking System. All rights reserved.</p>
+        </div>
+    </footer>
+    
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        // Auto-dismiss alerts after 5 seconds
+        $(document).ready(function() {
+            setTimeout(function() {
+                $('.alert').alert('close');
+            }, 5000);
+            
+            // Handle date picker form submission
+            $('#date').change(function() {
+                const selectedDate = $(this).val();
+                if (selectedDate) {
+                    window.location.href = /*[[@{/screenings/date/}]]*/ '/screenings/date/' + selectedDate;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

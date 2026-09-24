@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>User Login</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .admin-login-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row mt-5">
+            <div class="col-md-6 offset-md-3">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h3>User Login</h3>
+                    </div>
+                    <div class="card-body">
+                        <!-- Verification Success Message -->
+                        <div th:if="${verificationSuccess}" class="alert alert-success alert-dismissible fade show" role="alert">
+                            <span th:text="${verificationSuccess}"></span>
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        
+                        <!-- Verification Error Message -->
+                        <div th:if="${verificationError}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <span th:text="${verificationError}"></span>
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        
+                        <!-- Session Expired Message -->
+                        <div th:if="${expired}" class="alert alert-warning alert-dismissible fade show" role="alert">
+                            <span th:text="${expired}">Your session has expired due to inactivity. Please log in again.</span>
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        
+                        <div th:if="${param.error}" class="alert alert-danger">
+                            Invalid username or password. Please check your credentials or verify your email.
+                        </div>
+                        <div th:if="${param.logout}" class="alert alert-success">
+                            You have been logged out.
+                        </div>
+                        <div th:if="${param.expired}" class="alert alert-warning">
+                            Your session has expired due to inactivity. Please log in again.
+                        </div>
+                        <div th:if="${param.resetSuccess}" class="alert alert-success">
+                            Your password has been reset successfully. You can now login with your new password.
+                        </div>
+                        <div th:if="${param.userOnly}" class="alert alert-warning">
+                            This account does not have admin privileges. Please use the regular login page.
+                        </div>
+                        
+                        <form th:action="@{/perform_login}" method="post">
+                            <div class="form-group">
+                                <label for="username">Email</label>
+                                <input type="email" id="username" name="username" class="form-control" required autofocus>
+                            </div>
+                            <div class="form-group">
+                                <label for="password">Password</label>
+                                <input type="password" id="password" name="password" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-primary btn-block">Login</button>
+                            </div>
+                        </form>
+                        <div class="text-center">
+                            <p>Don't have an account? <a th:href="@{/register}">Register here</a></p>
+                            <p>Forgot your password? <a th:href="@{/forgot-password}" class="font-weight-bold">Reset it here</a></p>
+                        </div>
+                        <div class="admin-login-link">
+                            <hr>
+                            <p>Are you an administrator? <a th:href="@{/admin-login}" class="font-weight-bold">Admin Login</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

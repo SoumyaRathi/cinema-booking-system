@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <!-- Admin Sidebar Fragment -->
+    <div th:fragment="sidebar(active)" class="col-md-2 bg-dark text-white p-0" style="min-height: 100vh;">
+        <div class="p-4">
+            <h4>Movie Ticket Booking System</h4>
+        </div>
+        <div class="list-group list-group-flush">
+            <a th:href="@{/admin/dashboard}" class="list-group-item list-group-item-action bg-dark text-white" th:classappend="${active == 'dashboard' ? 'active' : ''}">Dashboard</a>
+            <a th:href="@{/admin/movies}" class="list-group-item list-group-item-action bg-dark text-white" th:classappend="${active == 'movies' ? 'active' : ''}">Movies</a>
+            <a th:href="@{/admin/screenings}" class="list-group-item list-group-item-action bg-dark text-white" th:classappend="${active == 'screenings' ? 'active' : ''}">Screenings</a>
+            <a th:href="@{/admin/bookings}" class="list-group-item list-group-item-action bg-dark text-white" th:classappend="${active == 'bookings' ? 'active' : ''}">Bookings</a>
+            <a th:href="@{/admin/no-shows}" class="list-group-item list-group-item-action bg-dark text-white" th:classappend="${active == 'no-shows' ? 'active' : ''}">No-Shows</a>
+            <a th:href="@{/admin/users}" class="list-group-item list-group-item-action bg-dark text-white" th:classappend="${active == 'users' ? 'active' : ''}">Users</a>
+            <a th:href="@{/logout}" class="list-group-item list-group-item-action bg-dark text-white">Logout</a>
+        </div>
+    </div>
+</body>
+</html>

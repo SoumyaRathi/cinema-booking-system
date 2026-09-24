@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Most Watched Movie Report</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <!-- Use Chart.js v2.9.4 instead of v3.9.1 for better compatibility -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"></script>
+    <style th:replace="notification-fragment :: notification-styles"></style>
+    <style>
+        .movie-card {
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+            height: 100%;
+            overflow: hidden;
+        }
+        .movie-card:hover {
+            transform: translateY(-5px);
+        }
+        .movie-poster {
+            height: 200px;
+            object-fit: cover;
+            width: 100%;
+        }
+        .movie-rank {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 30px;
+            height: 30px;
+            background-color: rgba(255, 193, 7, 0.9);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        .tickets-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        .genre-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 5px;
+        }
+        .genre-pill {
+            background-color: #f0f0f0;
+            color: #333;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+        }
+        .report-header {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .stats-card {
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+            margin-bottom: 20px;
+        }
+        .stats-card:hover {
+            transform: translateY(-5px);
+        }
+        .stats-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        .peso-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            font-weight: bold;
+            font-family: Arial, sans-serif;
+        }
+        .stats-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+        .stats-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 20px;
+        }
+        .top-movie-highlight {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+        }
+        .top-movie-poster {
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            max-height: 200px;
+            object-fit: cover;
+        }
+        .top-movie-details {
+            padding: 15px;
+        }
+        .top-movie-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .top-movie-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .top-movie-stat {
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 8px 12px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            min-width: 100px;
+        }
+        .top-movie-stat-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #fd7e14;
+        }
+        .top-movie-stat-label {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+        .movie-grid {
+            margin-top: 20px;
+        }
+        .movie-grid-title {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        .comparison-chart {
+            height: 400px;
+            margin-bottom: 30px;
+        }
+        /* Ranking Style for Other Movies */
+        .ranking-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: transform 0.3s;
+        }
+        .ranking-card:hover {
+            transform: translateY(-3px);
+        }
+        .ranking-number {
+            width: 40px;
+            height: 40px;
+            background-color: #fd7e14;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+        .ranking-poster {
+            width: 60px;
+            height: 90px;
+            object-fit: cover;
+            border-radius: 8px;
+            flex-shrink: 0;
+        }
+        .ranking-details {
+            flex: 1;
+        } .ranking-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .ranking-info {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .ranking-tickets {
+            background-color: #17a2b8;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+        .ranking-revenue {
+            background-color: #28a745;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-2 bg-dark text-white p-0" style="min-height: 100vh;">
+                <div class="p-4">
+                    <h4>Admin Panel</h4>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a th:href="@{/admin/dashboard}" class="list-group-item list-group-item-action bg-dark text-white">Dashboard</a>
+                    <a th:href="@{/admin/movies}" class="list-group-item list-group-item-action bg-dark text-white">Movies</a>
+                    <a th:href="@{/admin/users}" class="list-group-item list-group-item-action bg-dark text-white">Users</a>
+                    <a th:href="@{/admin/bookings}" class="list-group-item list-group-item-action bg-dark text-white">Bookings</a>
+                    <a th:href="@{/admin/no-shows}" class="list-group-item list-group-item-action bg-dark text-white">No-Shows</a>
+                    <a th:href="@{/admin/reports}" class="list-group-item list-group-item-action bg-dark text-white active">Reports</a>
+                    <a th:href="@{/admin/notifications}" class="list-group-item list-group-item-action bg-dark text-white">
+                        Notifications
+                        <span th:if="${unreadNotificationsCount > 0}" class="badge badge-danger ml-2" th:text="${unreadNotificationsCount}">0</span>
+                    </a>
+                    <a th:href="@{/admin/profile}" class="list-group-item list-group-item-action bg-dark text-white">Profile</a>
+                    <a th:href="@{/logout}" class="list-group-item list-group-item-action bg-dark text-white">Logout</a>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-10 p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2>Most Watched Movie Report</h2>
+                    <div th:replace="notification-fragment :: notification-bell"></div>
+                </div> 
+                <!-- Genre Filter -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5>Filter by Genre</h5>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/admin/reports/most-watched-movie}" method="get" class="form-inline">
+                            <div class="form-group mr-3">
+                                <label for="genre" class="mr-2">Genre:</label>
+                                <select id="genre" name="genre" class="form-control">
+                                    <option value="All" th:selected="${selectedGenre == null || selectedGenre == 'All'}">All Genres</option>
+                                    <option th:each="g : ${genres}" th:value="${g}" th:text="${g}" th:selected="${g == selectedGenre}"></option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Apply Filter</button>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Report Summary Stats -->
+                <div class="row" th:if="${mostWatchedMovies != null && !mostWatchedMovies.empty}">
+                    <div class="col-md-3">
+                        <div class="card stats-card bg-warning text-white">
+                            <div class="card-body text-center">
+                                <div class="stats-icon">
+                                    <i class="fas fa-ticket-alt"></i>
+                                </div>
+                                <div class="stats-value" th:text="${#aggregates.sum(mostWatchedMovies.![ticketsSold])}">0</div>
+                                <div class="stats-label">Total Tickets Sold</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stats-card bg-success text-white">
+                            <div class="card-body text-center">
+                                <div class="peso-icon">
+                                    ₱
+                                </div>
+                                <div class="stats-value" th:text="${'₱' + #numbers.formatDecimal(#aggregates.sum(mostWatchedMovies.![revenue]), 0, 2)}">₱0.00</div>
+                                <div class="stats-label">Total Revenue</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stats-card bg-primary text-white">
+                            <div class="card-body text-center">
+                                <div class="stats-icon">
+                                    <i class="fas fa-film"></i>
+                                </div>
+                                <div class="stats-value" th:text="${mostWatchedMovies.size()}">0</div>
+                                <div class="stats-label">Movies Analyzed</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stats-card bg-info text-white">
+                            <div class="card-body text-center">
+                                <div class="stats-icon">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <div class="stats-value" th:if="${mostWatchedMovies.size() > 0 && mostWatchedMovies[0].ticketsSold > 0}" 
+                                     th:text="${#numbers.formatInteger(mostWatchedMovies[0].ticketsSold, 1, 'COMMA')}">0</div>
+                                <div class="stats-value" th:unless="${mostWatchedMovies.size() > 0 && mostWatchedMovies[0].ticketsSold > 0}">0</div>
+                                <div class="stats-label">Most Watched Movie</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- MOVED TO TOP: Most Watched Movies Section -->
+                <div th:if="${mostWatchedMovies != null && !mostWatchedMovies.empty}">
+                    <!-- Report Header -->
+                    <div class="report-header">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h4>🎬 Most Watched Movie of All Time</h4>
+                                <p class="text-muted">
+                                    The movies that have been viewed by the most people throughout all time
+                                    <span th:if="${selectedGenre != null && selectedGenre != 'All'}" th:text="' - Genre: ' + ${selectedGenre}"></span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Top Movie Highlight -->
+                    <div class="top-movie-highlight" th:if="${mostWatchedMovies.size() > 0}">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="position-relative">
+                                    <img th:src="${mostWatchedMovies[0].effectiveImageUrl}" class="img-fluid top-movie-poster" alt="Movie Poster">
+                                    <div class="movie-rank">1</div>
+                                </div>
+                            </div>
+                            <div class="col-md-8 top-movie-details">
+                                <h3 class="top-movie-title" th:text="${mostWatchedMovies[0].title}">Movie Title</h3>
+                                <div class="top-movie-stats">
+                                    <div class="top-movie-stat">
+                                        <div class="top-movie-stat-value" th:text="${mostWatchedMovies[0].ticketsSold}">0</div>
+                                        <div class="top-movie-stat-label">Tickets Sold</div>
+                                    </div>
+                                    <div class="top-movie-stat">
+                                        <div class="top-movie-stat-value" th:text="${'₱' + #numbers.formatDecimal(mostWatchedMovies[0].revenue, 0, 2)}">₱0.00</div>
+                                        <div class="top-movie-stat-label">Total Revenue</div>
+                                    </div>
+                                </div>
+                                <div class="genre-pills mb-3" th:if="${mostWatchedMovies[0].genres != null && !mostWatchedMovies[0].genres.empty}">
+                                    <span th:each="g : ${mostWatchedMovies[0].genres}" class="badge badge-primary mr-1" th:text="${g}">Genre</span>
+                                </div>
+                                <p class="card-text">This movie has been watched by the most people of all time in our theaters, making it our most popular film to date.</p>
+                                <a th:href="@{/admin/movies/edit/{id}(id=${mostWatchedMovies[0].id})}" class="btn btn-outline-primary">View Movie Details</a>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Other Most Watched Movies - Ranking Style -->
+                    <div th:if="${mostWatchedMovies.size() > 1}">
+                        <h4 class="movie-grid-title">Other Most Watched Movies</h4>
+                        <div th:each="movie, stat : ${mostWatchedMovies}" th:if="${stat.index > 0 && stat.index < 6}">
+                            <div class="ranking-card">
+                                <div class="ranking-number" th:text="${stat.index + 1}">2</div>
+                                <img th:src="${movie.effectiveImageUrl}" class="ranking-poster" alt="Movie Poster">
+                                <div class="ranking-details">
+                                    <h5 class="ranking-title" th:text="${movie.title}">Movie Title</h5>
+                                    <div class="genre-pills mb-2" th:if="${movie.genres != null && !movie.genres.empty}">
+                                        <span th:each="g : ${movie.genres}" class="genre-pill" th:text="${g}">Genre</span>
+                                    </div>
+                                    <div class="ranking-info">
+                                        <span class="ranking-tickets" th:text="${movie.ticketsSold + ' Tickets'}">0 Tickets</span>
+                                        <span class="ranking-revenue" th:text="${'Revenue: ₱' + #numbers.formatDecimal(movie.revenue, 0, 2)}">Revenue: ₱0.00</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Top Movies Comparison Chart -->
+                <div class="card mb-4" th:if="${mostWatchedMovies != null && !mostWatchedMovies.empty}">
+                    <div class="card-header">
+                        <h5>Top Movies by Audience Size</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="audienceComparisonChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Genre Popularity Chart -->
+                <div class="card mb-4" th:if="${mostWatchedMovies != null && !mostWatchedMovies.empty}">
+                    <div class="card-header">
+                        <h5>Genre Popularity by Audience Size</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="comparison-chart">
+                            <canvas id="genrePopularityChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Audience Distribution Chart -->
+                <div class="card mb-4" th:if="${mostWatchedMovies != null && !mostWatchedMovies.empty}">
+                    <div class="card-header">
+                        <h5>Audience Distribution Across Top Movies</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="comparison-chart">
+                            <canvas id="audienceDistributionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- No Data Message -->
+                <div class="col-md-12" th:if="${mostWatchedMovies == null || mostWatchedMovies.empty}">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle mr-2"></i> No data available for most watched movies with the selected criteria.
+                    </div>
+                </div>
+                
+                <!-- Navigation Buttons -->
+                <div class="mt-4">
+                    <div class="btn-group">
+                        <a th:href="@{/admin/reports/index}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left mr-2"></i> Back to Reports
+                        </a>
+                        <a th:href="@{/admin/dashboard}" class="btn btn-primary">
+                            <i class="fas fa-tachometer-alt mr-2"></i> Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Hidden data elements for charts -->
+    <div style="display: none;">
+        <input type="hidden" id="movieCount" th:value="${mostWatchedMovies != null ? mostWatchedMovies.size() : 0}">
+        <th:block th:if="${mostWatchedMovies != null}" th:each="movie, stat : ${mostWatchedMovies}">
+            <input type="hidden" th:id="'movieTitle_' + ${stat.index}" th:value="${movie.title}">
+            <input type="hidden" th:id="'movieTickets_' + ${stat.index}" th:value="${movie.ticketsSold}">
+            <input type="hidden" th:id="'movieRevenue_' + ${stat.index}" th:value="${movie.revenue}">
+            <input type="hidden" th:id="'movieGenres_' + ${stat.index}" th:value="${movie.genres != null ? #strings.listJoin(movie.genres, ',') : ''}">
+        </th:block>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script th:replace="notification-fragment :: notification-scripts"></script>
+    
+    <!-- Chart Scripts -->
+    <script th:if="${mostWatchedMovies != null && !mostWatchedMovies.empty}">
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("DOM loaded, initializing charts...");
+            
+            try {
+                // Debug: Check if Chart.js is loaded
+                if (typeof Chart === 'undefined') {
+                    console.error("Chart.js is not loaded!");
+                    return;
+                }
+                console.log("Chart.js is loaded, version:", Chart.version);
+                
+                // Get the number of movies
+                const movieCount = parseInt(document.getElementById('movieCount').value) || 0;
+                console.log("Movie count:", movieCount);
+                
+                // Extract data from hidden elements
+                const movieTitles = [];
+                const ticketsData = [];
+                const revenueData = [];
+                const genresData = [];
+                
+                for (let i = 0; i < movieCount; i++) {
+                    const titleElement = document.getElementById('movieTitle_' + i);
+                    const ticketsElement = document.getElementById('movieTickets_' + i);
+                    const revenueElement = document.getElementById('movieRevenue_' + i);
+                    const genresElement = document.getElementById('movieGenres_' + i);
+                    
+                    if (titleElement && ticketsElement) {
+                        movieTitles.push(titleElement.value);
+                        ticketsData.push(parseInt(ticketsElement.value));
+                        revenueData.push(parseFloat(revenueElement ? revenueElement.value : 0));
+                        
+                        if (genresElement) {
+                            genresData.push(genresElement.value);
+                        } else {
+                            genresData.push('');
+                        }
+                    }
+                }
+                
+                console.log("Movie titles:", movieTitles);
+                console.log("Tickets data:", ticketsData);
+                console.log("Revenue data:", revenueData);
+                console.log("Genres data:", genresData);
+                
+                // Only create charts if we have data
+                if (movieTitles.length > 0 && ticketsData.length > 0) {
+                    // 1. Top Movies Chart (Horizontal Bar Chart)
+                    const audienceCtx = document.getElementById('audienceComparisonChart');
+                    if (!audienceCtx) {
+                        console.error("Canvas element 'audienceComparisonChart' not found");
+                    } else {
+                        console.log("Creating audience comparison chart...");
+                        
+                        // Limit to top 10 movies for better visualization
+                        const topMoviesLimit = Math.min(10, movieTitles.length);
+                        const topMovieTitles = movieTitles.slice(0, topMoviesLimit);
+                        const topMoviesTickets = ticketsData.slice(0, topMoviesLimit);
+                        const topMoviesRevenue = revenueData.slice(0, topMoviesLimit);
+                          new Chart(audienceCtx, {
+                            type: 'horizontalBar',
+                            data: {
+                                labels: topMovieTitles,
+                                datasets: [{
+                                    label: 'Tickets Sold',
+                                    data: topMoviesTickets,
+                                    backgroundColor: 'rgba(255, 193, 7, 0.7)',
+                                    borderColor: 'rgba(255, 193, 7, 1)',
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                scales: {
+                                    xAxes: [{
+                                        ticks: {
+                                            beginAtZero: true,
+                                            callback: function(value) {
+                                                return value.toLocaleString();
+                                            }
+                                        },
+                                        scaleLabel: {
+                                            display: true,
+                                            labelString: 'Number of Tickets Sold'
+                                        }
+                                    }]
+                                },
+                                legend: {
+                                    display: false
+                                },
+                                tooltips: {
+                                    callbacks: {
+                                        label: function(tooltipItem, data) {
+                                            const index = tooltipItem.index;
+                                            const tickets = tooltipItem.xLabel.toLocaleString();
+                                            const revenue = topMoviesRevenue[index].toLocaleString();
+                                            return [
+                                                'Tickets Sold: ' + tickets,
+                                                'Revenue: ₱' + revenue
+                                            ];
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    }
+                    
+                    // 2. Genre Popularity Chart
+                    const genreCtx = document.getElementById('genrePopularityChart');
+                    if (!genreCtx) {
+                        console.error("Canvas element 'genrePopularityChart' not found");
+                    } else {
+                        console.log("Creating genre popularity chart...");
+                        
+                        // Process genre data
+                        const genreCounts = {};
+                        const genreRevenue = {};
+                        genresData.forEach((genreString, index) => {
+                            if (genreString) {
+                                const genres = genreString.split(',');
+                                const ticketCount = ticketsData[index];
+                                const revenue = revenueData[index];
+                                
+                                genres.forEach(genre => {
+                                    genre = genre.trim();
+                                    if (!genreCounts[genre]) {
+                                        genreCounts[genre] = 0;
+                                        genreRevenue[genre] = 0;
+                                    }
+                                    genreCounts[genre] += ticketCount;
+                                    genreRevenue[genre] += revenue;
+                                });
+                            }
+                        });
+                        
+                        // Convert to arrays for chart
+                        const genreLabels = Object.keys(genreCounts);
+                        const genreValues = Object.values(genreCounts);
+                        const genreRevenueValues = Object.values(genreRevenue);
+                        
+                        // Sort by popularity
+                        const genrePairs = genreLabels.map((genre, i) => ({ 
+                            genre, 
+                            value: genreValues[i], 
+                            revenue: genreRevenueValues[i] 
+                        }));
+                        genrePairs.sort((a, b) => b.value - a.value);
+                        
+                        const sortedGenreLabels = genrePairs.map(pair => pair.genre);
+                        const sortedGenreValues = genrePairs.map(pair => pair.value);
+                        const sortedGenreRevenue = genrePairs.map(pair => pair.revenue);
+                        
+                        console.log("Genre labels:", sortedGenreLabels);
+                        console.log("Genre values:", sortedGenreValues);
+                        
+                        const backgroundColors = [
+                            'rgba(255, 99, 132, 0.7)',
+                            'rgba(54, 162, 235, 0.7)',
+                            'rgba(255, 206, 86, 0.7)',
+                            'rgba(75, 192, 192, 0.7)',
+                            'rgba(153, 102, 255, 0.7)',
+                            'rgba(255, 159, 64, 0.7)',
+                            'rgba(199, 199, 199, 0.7)',
+                            'rgba(83, 102, 255, 0.7)',
+                            'rgba(40, 159, 64, 0.7)',
+                            'rgba(210, 199, 199, 0.7)'
+                        ];
+                        
+                        new Chart(genreCtx, {
+                            type: 'bar',
+                            data: {
+                                labels: sortedGenreLabels,
+                                datasets: [{
+                                    label: 'Tickets Sold',
+                                    data: sortedGenreValues,
+                                    backgroundColor: backgroundColors,
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                scales: {
+                                    yAxes: [{
+                                        ticks: {
+                                            beginAtZero: true,
+                                            callback: function(value) {
+                                                return value.toLocaleString();
+                                            }
+                                        },
+                                        scaleLabel: {
+                                            display: true,
+                                            labelString: 'Number of Tickets Sold'
+                                        }
+                                    }]
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Most Popular Genres by Audience Size'
+                                },
+                                tooltips: {
+                                    callbacks: {
+                                        label: function(tooltipItem, data) {
+                                            const index = tooltipItem.index;
+                                            const tickets = tooltipItem.yLabel.toLocaleString();
+                                            const revenue = sortedGenreRevenue[index].toLocaleString();
+                                            return [ 'Tickets Sold: ' + tickets,
+                                                'Revenue: ₱' + revenue
+                                            ];
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    }
+                    
+                    // 3. Audience Distribution Chart
+                    const distributionCtx = document.getElementById('audienceDistributionChart');
+                    if (!distributionCtx) {
+                        console.error("Canvas element 'audienceDistributionChart' not found");
+                    } else {
+                        console.log("Creating audience distribution chart...");
+                        
+                        // Limit to top 8 movies for better visualization in a pie/doughnut chart
+                        const pieLimit = Math.min(8, movieTitles.length);
+                        const pieLabels = movieTitles.slice(0, pieLimit);
+                        const pieData = ticketsData.slice(0, pieLimit);
+                        const pieRevenue = revenueData.slice(0, pieLimit);
+                        
+                        // Calculate "Others" category if needed
+                        if (movieTitles.length > pieLimit) {
+                            pieLabels.push('Others');
+                            const othersSum = ticketsData.slice(pieLimit).reduce((sum, val) => sum + val, 0);
+                            const othersRevenue = revenueData.slice(pieLimit).reduce((sum, val) => sum + val, 0);
+                            pieData.push(othersSum);
+                            pieRevenue.push(othersRevenue);
+                        }
+                        
+                        const pieColors = [
+                            'rgba(255, 193, 7, 0.7)',
+                            'rgba(0, 123, 255, 0.7)',
+                            'rgba(40, 167, 69, 0.7)',
+                            'rgba(220, 53, 69, 0.7)',
+                            'rgba(23, 162, 184, 0.7)',
+                            'rgba(111, 66, 193, 0.7)',
+                            'rgba(102, 16, 242, 0.7)',
+                            'rgba(253, 126, 20, 0.7)',
+                            'rgba(108, 117, 125, 0.7)'
+                        ];
+                        
+                        new Chart(distributionCtx, {
+                            type: 'doughnut',
+                            data: {
+                                labels: pieLabels,
+                                datasets: [{
+                                    data: pieData,
+                                    backgroundColor: pieColors,
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                legend: {
+                                    position: 'right'
+                                },
+                                tooltips: {
+                                    callbacks: {
+                                        label: function(tooltipItem, data) {
+                                            const index = tooltipItem.index;
+                                            const value = data.datasets[0].data[index];
+                                            const total = data.datasets[0].data.reduce((a, b) => a + b, 0);
+                                            const percentage = Math.round((value / total) * 100);
+                                            const revenue = pieRevenue[index].toLocaleString();
+                                            return [
+                                                data.labels[index] + ': ' + value.toLocaleString() + ' tickets (' + percentage + '%)',
+                                                'Revenue: ₱' + revenue
+                                            ];
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    }
+                } else {
+                    console.error('No movie data available for charts');
+                }
+            } catch (error) {
+                console.error("Error initializing charts:", error);
+            }
+        });
+    </script>
+    
+    <!-- Script to prevent confirmation dialog -->
+    <script th:if="${preventConfirmDialog}">
+        // Override the default confirm function with one that always returns true
+        window.confirm = function() { return true; };
+    </script>
+</body>
+</html>

@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Users with No-Shows - Admin</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <style>
+        .user-row {
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+            position: relative;
+        }
+        .user-row:hover {
+            background-color: #f8f9fa;
+            border-left: 4px solid #007bff;
+        }
+        .filter-section {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .no-show-count {
+            font-size: 1.2rem;
+            font-weight: bold;
+            width: 30px;
+            height: 30px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            color: white;
+        }
+        .no-show-count-1 {
+            background-color: #ffc107;
+        }
+        .no-show-count-2 {
+            background-color: #fd7e14;
+        }
+        .no-show-count-3 {
+            background-color: #dc3545;
+        }
+        .user-list {
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+        }
+        .user-list-header {
+            background-color: #f8f9fa;
+            padding: 10px 15px;
+            border-bottom: 1px solid #dee2e6;
+            font-weight: bold;
+        }
+        .user-list-item {
+            padding: 15px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .user-list-item:last-child {
+            border-bottom: none;
+        }
+        .status-badge {
+            font-size: 0.8rem;
+        }
+        .last-no-show {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+        
+        /* Tooltip Styles */
+        .booking-tooltip {
+            position: fixed;
+            background: #fff;
+            border: 2px solid #007bff;
+            border-radius: 8px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            padding: 20px;
+            z-index: 9999;
+            min-width: 350px;
+            max-width: 450px;
+            display: none;
+            font-size: 0.9rem;
+            animation: fadeIn 0.2s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .booking-tooltip::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 30px;
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-bottom: 10px solid #007bff;
+        }
+        
+        .booking-tooltip::after {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: 32px;
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 8px solid #fff;
+        }
+        
+        .booking-tooltip h6 {
+            color: #dc3545;
+            margin-bottom: 15px;
+            font-weight: bold;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 8px;
+            font-size: 1.1rem;
+        }
+        
+        .booking-detail {
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .booking-detail .label {
+            font-weight: 600;
+            color: #495057;
+            min-width: 120px;
+        }
+        
+        .booking-detail .value {
+            color: #6c757d;
+            text-align: right;
+            font-weight: 500;
+        }
+        
+        .booking-separator {
+            border-top: 1px solid #eee;
+            margin: 15px 0;
+        }
+        
+        .loading-spinner {
+            text-align: center;
+            color: #6c757d;
+            padding: 20px;
+        }
+        
+        .error-message {
+            color: #dc3545;
+            font-size: 0.9rem;
+            text-align: center;
+            padding: 15px;
+        }
+        
+        .hoverable-area {
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+        
+        .hoverable-area:hover {
+            background-color: rgba(0, 123, 255, 0.1);
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">Movie Ticket Booking System - Admin</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/dashboard}">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/movies}">Movies</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/screenings}">Screenings</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/bookings}">Bookings</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/no-shows}">No-Shows</a>
+                    </li>
+                    <li class="nav-item active">
+                        <a class="nav-link" th:href="@{/admin/no-show-users}">No-Show Users</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/users}">Users</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/logout}">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Users with No-Shows</h2>
+            <div>
+                <a th:href="@{/admin/no-shows}" class="btn btn-outline-danger mr-2">
+                    <i class="fas fa-calendar-times"></i> View No-Show Bookings
+                </a>
+                <a th:href="@{/admin/users}" class="btn btn-primary">
+                    <i class="fas fa-users"></i> All Users
+                </a>
+            </div>
+        </div>
+        
+        <!-- Success and Error Messages -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${success}"></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${error}"></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <form th:action="@{/admin/no-show-users}" method="get" class="form-inline">
+                <div class="form-group mr-3">
+                    <label for="minNoShows" class="mr-2">Min No-Shows:</label>
+                    <input type="number" class="form-control" id="minNoShows" name="minNoShows" min="1" th:value="${minNoShows}" placeholder="1">
+                </div>
+                <div class="form-group mr-3">
+                    <label for="blocked" class="mr-2">Status:</label>
+                    <select class="form-control" id="blocked" name="blocked">
+                        <option value="">All</option>
+                        <option value="true" th:selected="${blocked == true}">Blocked</option>
+                        <option value="false" th:selected="${blocked == false}">Not Blocked</option>
+                    </select>
+                </div>
+                <div class="form-group mr-3">
+                    <label for="keyword" class="mr-2">Search:</label>
+                    <input type="text" class="form-control" id="keyword" name="keyword" th:value="${keyword}" placeholder="Name or Email">
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-filter"></i> Filter
+                </button>
+                <a th:href="@{/admin/no-show-users}" class="btn btn-outline-secondary ml-2">
+                    <i class="fas fa-redo"></i> Reset
+                </a>
+            </form>
+        </div>
+        
+        <!-- Users with No-Shows List -->
+        <div class="user-list">
+            <!-- List Header -->
+            <div class="user-list-header d-none d-md-flex row">
+                <div class="col-md-4">User</div>
+                <div class="col-md-3">Contact</div>
+                <div class="col-md-2">Last No-Show</div>
+                <div class="col-md-1 text-center">Count</div>
+                <div class="col-md-2 text-right">Actions</div>
+            </div>
+            
+            <!-- No Users Message -->
+            <div class="user-list-item" th:if="${usersWithNoShows == null || usersWithNoShows.isEmpty()}">
+                <div class="alert alert-info mb-0">
+                    No users found with no-show records matching the selected criteria.
+                </div>
+            </div>
+            
+            <!-- User List Items -->
+            <div class="user-list-item user-row" th:each="user : ${usersWithNoShows}">
+                <div class="row align-items-center">
+                    <!-- User Info -->
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-center">
+                            <div>
+                                <h5 class="mb-1" th:text="${user.firstName + ' ' + user.lastName}">John Doe</h5>
+                                <div>
+                                    <span th:if="${user.isBlocked}" class="badge badge-danger status-badge">Blocked</span>
+                                    <span th:if="${!user.isBlocked && user.blockedUntil != null && user.blockedUntil.isAfter(T(java.time.LocalDateTime).now())}" 
+                                          class="badge badge-warning status-badge">Temp. Blocked</span>
+                                    <span th:if="${user.blockReason != null}" class="text-muted small" th:text="${user.blockReason}">Multiple no-shows</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Contact Info -->
+                    <div class="col-md-3">
+                        <div class="mb-1">
+                            <i class="fas fa-envelope mr-2 text-muted"></i>
+                            <span th:text="${user.email}">john@example.com</span>
+                        </div>
+                        <div th:if="${user.phone != null}">
+                            <i class="fas fa-phone mr-2 text-muted"></i>
+                            <span th:text="${user.phone}">123-456-7890</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Last No-Show -->
+                    <div class="col-md-2">
+                        <div class="last-no-show" th:if="${user.lastNoShow != null}">
+                            <i class="fas fa-calendar-times mr-1"></i>
+                            <span th:text="${#temporals.format(user.lastNoShow, 'yyyy-MM-dd')}">2023-01-01</span>
+                        </div>
+                        <div class="last-no-show" th:if="${user.blockedUntil != null}">
+                            <i class="fas fa-ban mr-1"></i>
+                            <span th:text="${#temporals.format(user.blockedUntil, 'yyyy-MM-dd')}">2023-01-08</span>
+                        </div>
+                    </div>
+                    
+                    <!-- No-Show Count -->
+                    <div class="col-md-1 text-center">
+                        <span th:class="'no-show-count ' + (${user.noShowCount == 1} ? 'no-show-count-1' : (${user.noShowCount == 2} ? 'no-show-count-2' : 'no-show-count-3'))" 
+                              th:text="${user.noShowCount}">3</span>
+                    </div>
+                    
+                    <!-- Actions -->
+                    <div class="col-md-2 text-right">
+                        <div class="btn-group">
+                            <a th:href="@{/admin/no-shows/user/{email}(email=${user.email})}" 
+                               class="btn btn-sm btn-outline-danger hoverable-area"
+                               th:data-user-id="${user.id}"
+                               onmouseenter="showBookingTooltip(this, event)" 
+                               onmouseleave="hideBookingTooltip()">
+                                <i class="fas fa-calendar-times"></i> <span class="d-none d-lg-inline">No-Shows</span>
+                            </a>
+                            <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-toggle="dropdown">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-right">
+                                <a th:href="@{/admin/no-show-users/view-profile/{id}(id=${user.id})}" class="dropdown-item">
+                                    <i class="fas fa-user"></i> View Profile
+                                </a>
+                                <a th:if="${user.isBlocked}" 
+                                   th:href="@{/admin/users/unblock/{id}(id=${user.id})}" 
+                                   class="dropdown-item"
+                                   onclick="return confirm('Are you sure you want to unblock this user?')">
+                                    <i class="fas fa-unlock"></i> Unblock User
+                                </a>
+                                <a th:unless="${user.isBlocked}" 
+                                   th:href="@{/admin/users/block/{id}(id=${user.id})}" 
+                                   class="dropdown-item"
+                                   onclick="return confirm('Are you sure you want to block this user?')">
+                                    <i class="fas fa-ban"></i> Block User
+                                </a>
+                                <a th:href="@{/admin/users/reset-no-shows/{id}(id=${user.id})}" 
+                                   class="dropdown-item"
+                                   onclick="return confirm('Are you sure you want to reset the no-show count for this user?')">
+                                    <i class="fas fa-redo"></i> Reset No-Show Count
+                                </a>
+                                <a th:href="@{/admin/users/send-warning/{id}(id=${user.id})}" 
+                                   class="dropdown-item">
+                                    <i class="fas fa-envelope"></i> Send Warning Email
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Instruction for users -->
+        <div class="alert alert-info mt-3">
+            <i class="fas fa-info-circle"></i> 
+            <strong>Tip:</strong> Hover over the "No-Shows" button to see booking details without clicking.
+        </div>
+    </div>
+    
+    <!-- Tooltip Container -->
+    <div id="bookingTooltip" class="booking-tooltip"></div>
+    
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    
+    <script th:inline="javascript">
+        // Get the context path from Thymeleaf
+        var contextPath = /*[[@{/}]]*/ '/';
+        
+        let tooltipTimeout;
+        let currentTooltip = null;
+        let isTooltipVisible = false;
+        
+        function showBookingTooltip(element, event) {
+            if (tooltipTimeout) {
+                clearTimeout(tooltipTimeout);
+            }
+            
+            if (isTooltipVisible) {
+                return;
+            }
+            
+            const userId = element.getAttribute('data-user-id');
+            if (!userId) return;
+            
+            tooltipTimeout = setTimeout(() => {
+                loadBookingDetails(userId, event);
+            }, 100);
+        }
+        
+        function hideBookingTooltip() {
+            if (tooltipTimeout) {
+                clearTimeout(tooltipTimeout);
+                tooltipTimeout = null;
+            }
+            
+            setTimeout(() => {
+                const tooltip = document.getElementById('bookingTooltip');
+                if (tooltip && !tooltip.matches(':hover')) {
+                    tooltip.style.display = 'none';
+                    tooltip.innerHTML = '';
+                    currentTooltip = null;
+                    isTooltipVisible = false;
+                }
+            }, 100);
+        }
+        
+        function loadBookingDetails(userId, event) {
+            const tooltip = document.getElementById('bookingTooltip');
+            if (!tooltip) return;
+            
+            tooltip.innerHTML = `
+                <div class="loading-spinner">
+                    <i class="fas fa-spinner fa-spin"></i> Loading booking details...
+                </div>
+            `;
+            
+            positionTooltip(tooltip, event);
+            tooltip.style.display = 'block';
+            currentTooltip = tooltip;
+            isTooltipVisible = true;
+            
+            // Use the context path for the API URL
+            const apiUrl = contextPath + `admin/api/no-show-users/${userId}/booking-details`;
+            
+            console.log('Making request to:', apiUrl); // Debug log
+            
+            fetch(apiUrl)
+                .then(response => {
+                    console.log('Response status:', response.status); // Debug log
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: Failed to fetch booking details`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Received data:', data); // Debug log
+                    if (currentTooltip === tooltip && isTooltipVisible) {
+                        displayBookingDetails(tooltip, data);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching booking details:', error);
+                    if (currentTooltip === tooltip && isTooltipVisible) {
+                        tooltip.innerHTML = `
+                            <div class="error-message">
+                                <i class="fas fa-exclamation-triangle"></i> 
+                                Failed to load booking details<br>
+                                <small>${error.message}</small>
+                            </div>
+                        `;
+                    }
+                });
+        }
+        
+        function displayBookingDetails(tooltip, bookings) {
+            if (!bookings || bookings.length === 0) {
+                tooltip.innerHTML = `
+                    <div class="error-message">
+                        <i class="fas fa-info-circle"></i> No no-show bookings found
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '<h6><i class="fas fa-calendar-times"></i> Latest No-Show Bookings</h6>';
+            
+            // Sort by screening date/time descending (latest first) and limit to 3
+            const sortedBookings = bookings
+                .sort((a, b) => {
+                    const dateA = new Date(a.screeningDate + ' ' + a.screeningTime);
+                    const dateB = new Date(b.screeningDate + ' ' + b.screeningTime);
+                    return dateB - dateA;
+                })
+                .slice(0, 3);
+            
+            sortedBookings.forEach((booking, index) => {
+                if (index > 0) {
+                    html += '<div class="booking-separator"></div>';
+                }
+                
+                // Count seats
+                const seatCount = booking.seatNumbers ? booking.seatNumbers.split(',').length : 0;
+                
+                html += `<div class="booking-detail">
+                        <span class="label">Confirmation:</span>
+                        <span class="value">${booking.confirmationCode || 'N/A'}</span>
+                    </div>
+                    <div class="booking-detail">
+                        <span class="label">Movie:</span>
+                        <span class="value">${booking.movieTitle || 'N/A'}</span>
+                    </div>
+                    <div class="booking-detail">
+                        <span class="label">Date:</span>
+                        <span class="value">${booking.screeningDate || 'N/A'}</span>
+                    </div>
+                    <div class="booking-detail">
+                        <span class="label">Seats:</span>
+                        <span class="value">${seatCount} seat${seatCount !== 1 ? 's' : ''}</span>
+                    </div>
+                `;
+            });
+            
+            tooltip.innerHTML = html;
+        }
+        
+        function positionTooltip(tooltip, event) {
+            const mouseX = event.clientX;
+            const mouseY = event.clientY;
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+            
+            let left = mouseX + 15;
+            let top = mouseY + 15;
+            
+            if (left + 350 > viewportWidth) {
+                left = mouseX - 365;
+            }
+            
+            if (top + 250 > viewportHeight) {
+                top = mouseY - 265;
+            }
+            
+            left = Math.max(10, left);
+            top = Math.max(10, top);
+            
+            tooltip.style.left = left + 'px';
+            tooltip.style.top = top + 'px';
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const tooltip = document.getElementById('bookingTooltip');
+            if (tooltip) {
+                tooltip.addEventListener('mouseenter', function() {
+                    isTooltipVisible = true;
+                });
+                
+                tooltip.addEventListener('mouseleave', function() {
+                    hideBookingTooltip();
+                });
+            }
+        });
+        
+        document.addEventListener('click', function(event) {
+            const tooltip = document.getElementById('bookingTooltip');
+            if (tooltip && !tooltip.contains(event.target)) {
+                hideBookingTooltip();
+            }
+        });
+        
+        window.addEventListener('scroll', hideBookingTooltip);
+    </script>
+</body>
+</html>

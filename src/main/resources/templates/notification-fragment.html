@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <!-- Notification Bell with Counter -->
+    <div th:fragment="notification-bell" class="dropdown">
+        <button class="btn btn-link position-relative" type="button" id="notificationDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <i class="fas fa-bell"></i>
+            <span th:if="${unreadNotificationsCount > 0}" class="badge badge-danger notification-badge" th:text="${unreadNotificationsCount}">0</span>
+        </button>
+        <div class="dropdown-menu dropdown-menu-right notification-dropdown" aria-labelledby="notificationDropdown">
+            <div class="dropdown-header d-flex justify-content-between align-items-center">
+                <span>Notifications</span>
+                <button class="btn btn-sm btn-link mark-all-read">Mark all as read</button>
+            </div>
+            <div class="notification-list">
+                <div th:if="${recentNotifications != null && !recentNotifications.empty}" class="notification-items">
+                    <div th:each="notification : ${recentNotifications}" th:class="'dropdown-item notification-item ' + (${!notification.read} ? 'unread' : '')" th:data-id="${notification.id}">
+                        <div class="d-flex align-items-center">
+                            <div class="notification-icon mr-2" th:classappend="${
+                                notification.type == 'INFO' ? 'text-info' : 
+                                notification.type == 'SUCCESS' ? 'text-success' : 
+                                notification.type == 'WARNING' ? 'text-warning' : 
+                                notification.type == 'ERROR' ? 'text-danger' : ''}">
+                                <i th:class="${
+                                    notification.type == 'INFO' ? 'fas fa-info-circle' : 
+                                    notification.type == 'SUCCESS' ? 'fas fa-check-circle' : 
+                                    notification.type == 'WARNING' ? 'fas fa-exclamation-triangle' : 
+                                    notification.type == 'ERROR' ? 'fas fa-times-circle' : 'fas fa-bell'}"></i>
+                            </div>
+                            <div class="notification-content">
+                                <div class="notification-title" th:text="${notification.title}">Notification Title</div>
+                                <div class="notification-message" th:text="${notification.message}">Notification message goes here</div>
+                                <div class="notification-time text-muted small" th:text="${#temporals.format(notification.createdAt, 'yyyy-MM-dd HH:mm')}">2023-01-01 12:00</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div th:if="${recentNotifications == null || recentNotifications.empty}" class="dropdown-item text-center">
+                    No notifications
+                </div>
+            </div>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item text-center" th:href="@{/admin/notifications}">View all notifications</a>
+        </div>
+    </div>
+    
+    <!-- JavaScript for Notification Functionality -->
+    <script th:fragment="notification-scripts">
+        $(document).ready(function() {
+            // Mark notification as read when clicked
+            $('.notification-item').click(function(e) {
+                e.preventDefault();
+                var notificationId = $(this).data('id');
+                var notificationLink = $(this).data('link');
+                var $this = $(this);
+                
+                $.ajax({
+                    url: '/admin/notifications/mark-read/' + notificationId,
+                    type: 'POST',
+                    success: function(response) {
+                        if (response.success) {
+                            $this.removeClass('unread');
+                            updateNotificationCounter(response.unreadCount);
+                            
+                            // If notification has a link, navigate to it
+                            if (notificationLink) {
+                                window.location.href = notificationLink;
+                            }
+                        }
+                    }
+                });
+            });
+            
+            // Mark all notifications as read
+            $('.mark-all-read').click(function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                $.ajax({
+                    url: '/admin/notifications/mark-all-read',
+                    type: 'POST',
+                    success: function(response) {
+                        if (response.success) {
+                            $('.notification-item').removeClass('unread');
+                            updateNotificationCounter(0);
+                        }
+                    }
+                });
+            });
+            
+            function updateNotificationCounter(count) {
+                var $badge = $('.notification-badge');
+                if (count > 0) {
+                    if ($badge.length) {
+                        $badge.text(count);
+                    } else {
+                        $('#notificationDropdown').append('<span class="badge badge-danger notification-badge">' + count + '</span>');
+                    }
+                } else {
+                    $badge.remove();
+                }
+            }
+        });
+    </script>
+    
+    <!-- CSS for Notifications -->
+    <style th:fragment="notification-styles">
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            font-size: 0.7rem;
+            padding: 0.25rem 0.4rem;
+        }
+        
+        .notification-dropdown {
+            width: 350px;
+            padding: 0;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .notification-list {
+            max-height: 350px;
+            overflow-y: auto;
+        }
+        
+        .notification-item {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            cursor: pointer;
+        }
+        
+        .notification-item:hover {
+            background-color: rgba(0,0,0,0.03);
+        }
+        
+        .notification-item.unread {
+            background-color: rgba(13, 110, 253, 0.05);
+        }
+        
+        .notification-item.unread .notification-title {
+            font-weight: bold;
+        }
+        
+        .notification-title {
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .notification-message {
+            font-size: 0.8rem;
+            color: #666;
+        }
+        
+        .notification-time {
+            font-size: 0.7rem;
+            margin-top: 0.25rem;
+        }
+        
+        .dropdown-header {
+            background-color: #f8f9fa;
+            padding: 0.75rem 1rem;
+            font-weight: bold;
+        }
+    </style>
+</body>
+</html>

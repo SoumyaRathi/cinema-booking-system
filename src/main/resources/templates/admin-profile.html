@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin - Profile</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-2 bg-dark text-white p-0" style="min-height: 100vh;">
+                <div class="p-4">
+                    <h4>Admin Panel</h4>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a th:href="@{/admin/dashboard}" class="list-group-item list-group-item-action bg-dark text-white">Dashboard</a>
+                    <a th:href="@{/admin/movies}" class="list-group-item list-group-item-action bg-dark text-white">Movies</a>
+                    <a th:href="@{/admin/users}" class="list-group-item list-group-item-action bg-dark text-white">Users</a>
+                    <a th:href="@{/admin/profile}" class="list-group-item list-group-item-action bg-dark text-white active">Profile</a>
+                    <a th:href="@{/logout}" class="list-group-item list-group-item-action bg-dark text-white">Logout</a>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-10 p-4">
+                <h2 class="mb-4">Admin Profile</h2>
+                
+                <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+                <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Profile Information</h5>
+                            </div>
+                            <div class="card-body">
+                                <form th:action="@{/admin/profile/update}" method="post">
+                                    <div class="form-group">
+                                        <label for="firstName">First Name</label>
+                                        <input type="text" id="firstName" name="firstName" class="form-control" value="Admin" readonly>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="lastName">Last Name</label>
+                                        <input type="text" id="lastName" name="lastName" class="form-control" value="User" readonly>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="email">Email</label>
+                                        <input type="email" id="email" name="email" class="form-control" value="admin@example.com" readonly>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="role">Role</label>
+                                        <input type="text" id="role" class="form-control" value="Administrator" readonly>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Change Password</h5>
+                            </div>
+                            <div class="card-body">
+                                <form th:action="@{/admin/profile/change-password}" method="post">
+                                    <div class="form-group">
+                                        <label for="currentPassword">Current Password</label>
+                                        <input type="password" id="currentPassword" name="currentPassword" class="form-control" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="newPassword">New Password</label>
+                                        <input type="password" id="newPassword" name="newPassword" class="form-control" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="confirmPassword">Confirm New Password</label>
+                                        <input type="password" id="confirmPassword" name="confirmPassword" class="form-control" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Change Password</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script th:src="@{/js/script.js}"></script>
+</body>
+</html>

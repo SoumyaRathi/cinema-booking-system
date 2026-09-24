@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Screening</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .time-checkbox.past-time {
+            color: #dc3545;
+            text-decoration: line-through;
+        }
+        .time-checkbox.past-time label:after {
+            content: " (past)";
+            color: #dc3545;
+            font-size: 0.8rem;
+        }
+        .custom-time-item {
+            background-color: #f8f9fa;
+            padding: 8px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" th:href="@{/admin/dashboard}">Movie Ticket Booking System</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/movies}">Movies</a>
+                    </li>
+                    <li class="nav-item active">
+                        <a class="nav-link" th:href="@{/admin/screenings}">Screenings</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/bookings}">Bookings</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/users}">Users</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/logout}">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">Add New Screening</h4>
+                    </div>
+                    <div class="card-body">
+                        <!-- Success and Error Messages -->
+                        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                            <span th:text="${success}"></span>
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        
+                        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <span th:text="${error}"></span>
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        
+                        <div th:if="${warning}" class="alert alert-warning alert-dismissible fade show" role="alert">
+                            <span th:text="${warning}"></span>
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        
+                        <form th:action="@{/admin/screenings/add}" method="post" id="screeningForm">
+                            <div class="form-group">
+                                <label for="movieId">Movie</label>
+                                <select class="form-control" id="movieId" name="movieId" required>
+                                    <option value="">Select Movie</option>
+                                    <option th:each="movie : ${movies}" 
+                                            th:value="${movie.id}" 
+                                            th:text="${movie.title}"></option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="cinemaId">Cinema</label>
+                                <select class="form-control" id="cinemaId" name="cinemaId" required>
+                                    <option value="">Select Cinema</option>
+                                    <option th:each="cinema : ${cinemas}" 
+                                            th:value="${cinema.id}" 
+                                            th:text="${cinema.name}"></option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="screeningDate">Screening Date</label>
+                                <input type="date" class="form-control" id="screeningDate" name="screeningDate" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Screening Times</label>
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle"></i> Select one or more screening times for the selected date and cinema. 
+                                    Unavailable times (already booked for another movie or in the past) will be disabled.
+                                </div>
+                                
+                                <div id="timesContainer">
+                                    <div class="row mb-3">
+                                        <div class="col-md-4">
+                                            <div class="form-check time-checkbox">
+                                                <input class="form-check-input" type="checkbox" name="screeningTimes" id="time1" value="10:00">
+                                                <label class="form-check-label" for="time1">10:00 AM</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-check time-checkbox">
+                                                <input class="form-check-input" type="checkbox" name="screeningTimes" id="time2" value="13:00">
+                                                <label class="form-check-label" for="time2">1:00 PM</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-check time-checkbox">
+                                                <input class="form-check-input" type="checkbox" name="screeningTimes" id="time3" value="16:00">
+                                                <label class="form-check-label" for="time3">4:00 PM</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row mb-3">
+                                        <div class="col-md-4">
+                                            <div class="form-check time-checkbox">
+                                                <input class="form-check-input" type="checkbox" name="screeningTimes" id="time4" value="19:00">
+                                                <label class="form-check-label" for="time4">7:00 PM</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-check time-checkbox">
+                                                <input class="form-check-input" type="checkbox" name="screeningTimes" id="time5" value="22:00">
+                                                <label class="form-check-label" for="time5">10:00 PM</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group mt-3">
+                                    <label for="customTime">Add Custom Time (24-hour format, e.g. 14:30):</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="customTime" placeholder="14:30">
+                                        <div class="input-group-append">
+                                            <button class="btn btn-outline-secondary" type="button" id="addCustomTime">Add</button>
+                                        </div>
+                                    </div>
+                                    <small class="form-text text-muted">Enter time in 24-hour format (HH:MM). Times in the past cannot be selected.</small>
+                                    <div id="customTimeMessage" class="mt-2"></div>
+                                </div>
+                                
+                                <div id="selectedTimes" class="selected-times d-none">
+                                    <strong>Selected Times:</strong>
+                                    <div id="timesList"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="price">Ticket Price (₱)</label>
+                                <input type="number" class="form-control" id="price" name="price" step="0.01" min="0" value="10.00" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="totalSeats">Total Seats</label>
+                                <input type="number" class="form-control" id="totalSeats" name="totalSeats" min="1" value="100" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-primary" id="submitBtn">
+                                    <i class="fas fa-save"></i> Save Screening
+                                </button>
+                                <a th:href="@{/admin/screenings}" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left"></i> Back
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Store current date and time
+            let currentDate = new Date();
+            let currentLocalDate = currentDate.toISOString().split('T')[0];
+            
+            // Initialize date picker with today's date
+            $('#screeningDate').val(currentLocalDate);
+            $('#screeningDate').attr('min', currentLocalDate);
+            
+            // Handle cinema and date change to update available times
+            $('#cinemaId, #screeningDate').change(function() {
+                updateAvailableTimes();
+            });
+            
+            function updateAvailableTimes() {
+                const cinemaId = $('#cinemaId').val();
+                const screeningDate = $('#screeningDate').val();
+                
+                if (!cinemaId || !screeningDate) return;
+                
+                $.get('/admin/screenings/available-times', {
+                    cinemaId: cinemaId,
+                    date: screeningDate
+                })
+                .done(function(availableTimes) {
+                    // Update checkboxes based on available times
+                    $('.time-checkbox').each(function() {
+                        const checkbox = $(this).find('input');
+                        const timeValue = checkbox.val();
+                        
+                        // Reset classes
+                        $(this).removeClass('text-muted past-time');
+                        
+                        // Check if time is in the past for today
+                        let isPastTime = false;
+                        if (screeningDate === currentLocalDate) {
+                            const now = new Date();
+                            const [hours, minutes] = timeValue.split(':').map(Number);
+                            const timeDate = new Date();
+                            timeDate.setHours(hours, minutes, 0, 0);
+                            isPastTime = timeDate < now;
+                        }
+                        
+                        if (isPastTime) {
+                            // Time is in the past
+                            checkbox.prop('disabled', true);
+                            checkbox.prop('checked', false);
+                            $(this).addClass('past-time');
+                        } else if (availableTimes.includes(timeValue)) {
+                            // Time is available
+                            checkbox.prop('disabled', false);
+                        } else {
+                            // Time is unavailable (conflict)
+                            checkbox.prop('disabled', true);
+                            checkbox.prop('checked', false);
+                            $(this).addClass('text-muted');
+                        }
+                    });
+                })
+                .fail(function(error) {
+                    console.error('Error fetching available times:', error);
+                });
+            }
+            
+            // Handle custom time addition
+            $('#addCustomTime').click(function() {
+                const customTime = $('#customTime').val().trim();
+                if (!customTime) {
+                    showCustomTimeMessage('Please enter a time in 24-hour format (HH:MM)', 'danger');
+                    return;
+                }
+                
+                // Validate time format
+                const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
+                if (!timeRegex.test(customTime)) {
+                    showCustomTimeMessage('Invalid time format. Please use 24-hour format (HH:MM)', 'danger');
+                    return;
+                }
+                
+                const cinemaId = $('#cinemaId').val();
+                const screeningDate = $('#screeningDate').val();
+                
+                if (!cinemaId) {
+                    showCustomTimeMessage('Please select a cinema first', 'danger');
+                    return;
+                }
+                
+                if (!screeningDate) {
+                    showCustomTimeMessage('Please select a date first', 'danger');
+                    return;
+                }
+                
+                // Check if the time is in the past for today
+                const selectedDate = new Date(screeningDate);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                if (selectedDate.getTime() === today.getTime()) {
+                    // Same day, check if time is in the past
+                    const [hours, minutes] = customTime.split(':').map(Number);
+                    const customDateTime = new Date();
+                    customDateTime.setHours(hours, minutes, 0, 0);
+                    
+                    if (customDateTime < new Date()) {
+                        showCustomTimeMessage('Cannot schedule a screening in the past. Please select a future time.', 'danger');
+                        return;
+                    }
+                }
+                
+                // Direct validation without AJAX call - this is the key change to fix the issue
+                addCustomTimeToForm(customTime);
+                showCustomTimeMessage('Time added successfully!', 'success');
+                $('#customTime').val('');
+            });
+            
+            function addCustomTimeToForm(time) {
+                // Create a unique ID for the custom time
+                const customTimeId = 'custom_' + Date.now();
+                
+                // Create a new checkbox for the custom time
+                const customTimeHtml = `
+                    <div class="custom-time-item mb-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="screeningTimes" 
+                                   id="${customTimeId}" value="${time}" checked>
+                            <label class="form-check-label" for="${customTimeId}">
+                                ${time} (Custom)
+                            </label>
+                            <button type="button" class="btn btn-sm btn-outline-danger ml-2 remove-custom-time">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                // Append to the times container
+                $('#timesContainer').append(customTimeHtml);
+                
+                // Add event listener for remove button
+                $('.remove-custom-time').last().click(function() {
+                    $(this).closest('.custom-time-item').remove();
+                    updateSelectedTimes();
+                });
+                
+                // Update selected times display
+                updateSelectedTimes();
+            }
+            
+            function showCustomTimeMessage(message, type) {
+                $('#customTimeMessage').html(`
+                    <div class="alert alert-${type} alert-dismissible fade show py-2 px-3 mb-0" role="alert">
+                        ${message}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                `);
+                
+                // Auto-dismiss after 5 seconds
+                setTimeout(function() {
+                    $('#customTimeMessage .alert').alert('close');
+                }, 5000);
+            }
+
+            // Update selected times display when checkboxes change
+            $(document).on('change', 'input[name="screeningTimes"]', function() {
+                updateSelectedTimes();
+            });
+            
+            function updateSelectedTimes() {
+                const selectedTimes = [];
+                $('input[name="screeningTimes"]:checked').each(function() {
+                    selectedTimes.push($(this).val());
+                });
+                
+                if (selectedTimes.length > 0) {
+                    $('#selectedTimes').removeClass('d-none');
+                    $('#timesList').html(selectedTimes.map(time => `<span class="badge badge-primary mr-2 mb-2 p-2">${time}</span>`).join(''));
+                } else {
+                    $('#selectedTimes').addClass('d-none');
+                }
+            }
+            
+            // Form validation before submit
+            $('#screeningForm').submit(function(e) {
+                const selectedTimes = $('input[name="screeningTimes"]:checked').length;
+                if (selectedTimes === 0) {
+                    e.preventDefault();
+                    alert('Please select at least one screening time');
+                    return false;
+                }
+                
+                // Check if any selected times are in the past
+                const screeningDate = $('#screeningDate').val();
+                const now = new Date();
+                let hasPastTimes = false;
+                
+                $('input[name="screeningTimes"]:checked').each(function() {
+                    const timeValue = $(this).val();
+                    const [hours, minutes] = timeValue.split(':').map(Number);
+                    const timeDate = new Date(screeningDate);
+                    timeDate.setHours(hours, minutes, 0, 0);
+                    
+                    if (timeDate < now) {
+                        hasPastTimes = true;
+                        return false; // Break the loop
+                    }
+                });
+                
+                if (hasPastTimes) {
+                    e.preventDefault();
+                    alert('Cannot schedule screenings in the past. Please select future times only.');
+                    return false;
+                }
+                
+                return true;
+            });
+            
+            // Initialize available times on page load
+            updateAvailableTimes();
+            
+            // Add Enter key support for custom time
+            $('#customTime').keypress(function(e) {
+                if (e.which === 13) { // Enter key
+                    e.preventDefault();
+                    $('#addCustomTime').click();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

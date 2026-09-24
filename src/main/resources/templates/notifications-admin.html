@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Notifications</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style th:replace="notification-fragment :: notification-styles"></style>
+    <style>
+        .notification-item {
+            transition: background-color 0.3s;
+            cursor: pointer;
+        }
+        .notification-item:hover {
+            background-color: #f8f9fa;
+        }
+        .notification-item.unread {
+            background-color: #f0f7ff;
+        }
+        .notification-item.unread:hover {
+            background-color: #e6f2ff;
+        }
+        .notification-actions {
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-2 bg-dark text-white p-0" style="min-height: 100vh;">
+                <div class="p-4">
+                    <h4>Admin Panel</h4>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a th:href="@{/admin/dashboard}" class="list-group-item list-group-item-action bg-dark text-white">Dashboard</a>
+                    <a th:href="@{/admin/movies}" class="list-group-item list-group-item-action bg-dark text-white">Movies</a>
+                    <a th:href="@{/admin/users}" class="list-group-item list-group-item-action bg-dark text-white">Users</a>
+                    <a th:href="@{/admin/bookings}" class="list-group-item list-group-item-action bg-dark text-white">Bookings</a>
+                    <a th:href="@{/admin/no-shows}" class="list-group-item list-group-item-action bg-dark text-white">No-Shows</a>
+                    <a th:href="@{/admin/notifications}" class="list-group-item list-group-item-action bg-dark text-white active">
+                        Notifications
+                        <span th:if="${unreadCount > 0}" class="badge badge-danger ml-2" th:text="${unreadCount}">0</span>
+                    </a>
+                    <a th:href="@{/admin/profile}" class="list-group-item list-group-item-action bg-dark text-white">Profile</a>
+                    <a th:href="@{/logout}" class="list-group-item list-group-item-action bg-dark text-white">Logout</a>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-10 p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2>Notifications</h2>
+                    <div th:replace="notification-fragment :: notification-bell"></div>
+                </div>
+                
+                <!-- Notification Filters -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <form th:action="@{/admin/notifications}" method="get" class="row">
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="type">Type</label>
+                                    <select id="type" name="type" class="form-control">
+                                        <option value="">All Types</option>
+                                        <option value="INFO" th:selected="${typeFilter == 'INFO'}">Info</option>
+                                        <option value="SUCCESS" th:selected="${typeFilter == 'SUCCESS'}">Success</option>
+                                        <option value="WARNING" th:selected="${typeFilter == 'WARNING'}">Warning</option>
+                                        <option value="ERROR" th:selected="${typeFilter == 'ERROR'}">Error</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="read">Status</label>
+                                    <select id="read" name="read" class="form-control">
+                                        <option value="">All Status</option>
+                                        <option value="false" th:selected="${readFilter == 'false'}">Unread</option>
+                                        <option value="true" th:selected="${readFilter == 'true'}">Read</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="search">Search</label>
+                                    <input type="text" id="search" name="search" class="form-control" th:value="${searchFilter}" placeholder="Search by title or message">
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    <label class="d-block">&nbsp;</label>
+                                    <button type="submit" class="btn btn-primary btn-block">Filter</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- CSRF Token for AJAX requests -->
+                <input type="hidden" id="csrfToken" th:name="${_csrf != null ? _csrf.parameterName : '_csrf'}" th:value="${_csrf != null ? _csrf.token : ''}"/>
+                <input type="hidden" id="csrfHeader" th:value="${_csrf != null ? _csrf.headerName : 'X-CSRF-TOKEN'}"/>
+                
+                <!-- Notification Actions -->
+                <div class="d-flex justify-content-between mb-3">
+                    <div>
+                        <button id="markAllAsRead" class="btn btn-outline-primary" th:if="${unreadCount > 0}">
+                            <i class="fas fa-check-double mr-1"></i> Mark All as Read
+                        </button>
+                    </div>
+                    <div>
+                        <span class="mr-2">
+                            <strong th:text="${notifications != null ? notifications.size() : 0}">0</strong> notifications found
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Notifications List -->
+                <div class="card">
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            <div th:each="notification : ${notifications}" 
+                                 th:class="${!notification.read ? 'list-group-item notification-item unread' : 'list-group-item notification-item'}"
+                                 th:data-id="${notification.id}"
+                                 th:data-link="${notification.link}">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <span class="notification-icon mr-2" th:classappend="${
+                                            notification.type == 'INFO' ? 'text-info' : 
+                                            notification.type == 'SUCCESS' ? 'text-success' : 
+                                            notification.type == 'WARNING' ? 'text-warning' : 
+                                            notification.type == 'ERROR' ? 'text-danger' : ''}">
+                                            <i th:class="${
+                                                notification.type == 'INFO' ? 'fas fa-info-circle' : 
+                                                notification.type == 'SUCCESS' ? 'fas fa-check-circle' : 
+                                                notification.type == 'WARNING' ? 'fas fa-exclamation-triangle' : 
+                                                notification.type == 'ERROR' ? 'fas fa-times-circle' : 'fas fa-bell'}"></i>
+                                        </span>
+                                        <strong th:text="${notification.title}">Notification Title</strong>
+                                        <small class="text-muted ml-2" th:text="${#temporals.format(notification.createdAt, 'yyyy-MM-dd HH:mm')}">Date</small>
+                                    </div>
+                                    <div class="notification-actions">
+                                        <button th:if="${!notification.read}" class="btn btn-sm btn-outline-secondary mark-read" th:data-id="${notification.id}">
+                                            <i class="fas fa-check"></i> Mark as Read
+                                        </button>
+                                        <!-- FIXED: Handle both old and new URL formats -->
+                                        <a th:if="${notification.link != null && !notification.link.isEmpty() && notification.link != 'null'}" 
+                                           th:href="${notification.link.startsWith('/cinema-booking-system-0.0.1-SNAPSHOT') ? 
+                                                     notification.link.substring(notification.link.indexOf('/admin')) : 
+                                                     notification.link}" 
+                                           class="btn btn-sm btn-outline-primary ml-2 view-link">
+                                            <i class="fas fa-eye"></i> View
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="mt-1 small text-muted" th:text="${notification.message}">Notification message</div>
+                            </div>
+                            <div class="list-group-item text-center" th:if="${notifications == null || notifications.empty}">
+                                No notifications found
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Simple Pagination (if needed) -->
+                <div class="d-flex justify-content-center mt-4" th:if="${currentPage != null && totalPages != null && totalPages > 1}">
+                    <nav>
+                        <ul class="pagination">
+                            <li class="page-item" th:classappend="${currentPage == 0 ? 'disabled' : ''}">
+                                <a class="page-link" th:href="@{/admin/notifications(page=0, size=${size}, type=${typeFilter}, read=${readFilter}, search=${searchFilter})}">&laquo;</a>
+                            </li>
+                            <li class="page-item" th:classappend="${currentPage == 0 ? 'disabled' : ''}">
+                                <a class="page-link" th:href="@{/admin/notifications(page=${currentPage - 1}, size=${size}, type=${typeFilter}, read=${readFilter}, search=${searchFilter})}">&lt;</a>
+                            </li>
+                            <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" 
+                                th:if="${i >= currentPage - 2 && i <= currentPage + 2}"
+                                th:classappend="${i == currentPage ? 'active' : ''}">
+                                <a class="page-link" th:href="@{/admin/notifications(page=${i}, size=${size}, type=${typeFilter}, read=${readFilter}, search=${searchFilter})}" th:text="${i + 1}">1</a>
+                            </li>
+                            <li class="page-item" th:classappend="${currentPage == totalPages - 1 ? 'disabled' : ''}">
+                                <a class="page-link" th:href="@{/admin/notifications(page=${currentPage + 1}, size=${size}, type=${typeFilter}, read=${readFilter}, search=${searchFilter})}">&gt;</a>
+                            </li>
+                            <li class="page-item" th:classappend="${currentPage == totalPages - 1 ? 'disabled' : ''}">
+                                <a class="page-link" th:href="@{/admin/notifications(page=${totalPages - 1}, size=${size}, type=${typeFilter}, read=${readFilter}, search=${searchFilter})}">&raquo;</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script th:replace="notification-fragment :: notification-scripts"></script>
+    <script>
+        $(document).ready(function() {
+            // Get CSRF token information
+            const csrfToken = $('#csrfToken').val();
+            const csrfHeader = $('#csrfHeader').val();
+            
+            // Setup AJAX defaults for CSRF
+            if (csrfHeader && csrfToken) {
+                $(document).ajaxSend(function(e, xhr, options) {
+                    xhr.setRequestHeader(csrfHeader, csrfToken);
+                });
+            }
+            
+            // Mark individual notification as read
+            $('.mark-read').click(function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const id = $(this).data('id');
+                const button = $(this);
+                const notificationItem = button.closest('.notification-item');
+                
+                $.ajax({
+                    url: '/admin/notifications/mark-read/' + id,
+                    type: 'POST',
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            notificationItem.removeClass('unread');
+                            button.remove();
+                            
+                            // Update unread count in sidebar
+                            updateUnreadCount(response.unreadCount);
+                        } else {
+                            console.error('Failed to mark notification as read:', response.error);
+                            alert('Failed to mark notification as read: ' + (response.error || 'Unknown error'));
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error marking notification as read:', error);
+                        alert('Error marking notification as read. Please try again.');
+                    }
+                });
+            });
+            
+            // Mark all notifications as read
+            $('#markAllAsRead').click(function(e) {
+                e.preventDefault();
+                
+                $.ajax({
+                    url: '/admin/notifications/mark-all-read',
+                    type: 'POST',
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            $('.notification-item.unread').removeClass('unread');
+                            $('.mark-read').remove();
+                            updateUnreadCount(0);
+                        } else {
+                            console.error('Failed to mark all notifications as read:', response.error);
+                            alert('Failed to mark all notifications as read: ' + (response.error || 'Unknown error'));
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error marking all notifications as read:', error);
+                        alert('Error marking all notifications as read. Please try again.');
+                    }
+                });
+            });
+            
+            // Helper function to update unread count
+            function updateUnreadCount(count) {
+                const unreadBadge = $('.list-group-item.active .badge');
+                
+                if (count <= 0) {
+                    unreadBadge.remove();
+                    $('#markAllAsRead').remove();
+                } else {
+                    if (unreadBadge.length) {
+                        unreadBadge.text(count);
+                    } else {
+                        $('.list-group-item.active').append('<span class="badge badge-danger ml-2">' + count + '</span>');
+                    }
+                }
+            }
+            
+            // FIXED: Handle both old and new URL formats
+            function cleanUrl(url) {
+                if (!url || url === 'null' || url === 'undefined' || url.trim() === '') {
+                    return null;
+                }
+                
+                // Remove context path if it exists
+                if (url.startsWith('/cinema-booking-system-0.0.1-SNAPSHOT')) {
+                    return url.replace('/cinema-booking-system-0.0.1-SNAPSHOT', '');
+                }
+                
+                return url;
+            }
+            
+            // Make notification items clickable with proper URL handling
+            $('.notification-item').click(function(e) {
+                if (!$(e.target).closest('button, a').length) {
+                    let link = $(this).data('link');
+                    let cleanedUrl = cleanUrl(link);
+                    
+                    if (cleanedUrl) {
+                        window.location.href = cleanedUrl;
+                    }
+                }
+            });
+            
+            // Fix view links to handle both URL formats
+            $('.view-link').each(function() {
+                const href = $(this).attr('href');
+                const cleanedUrl = cleanUrl(href);
+                
+                if (cleanedUrl) {
+                    $(this).attr('href', cleanedUrl);
+                } else {
+                    $(this).addClass('disabled').attr('tabindex', '-1').attr('aria-disabled', 'true');
+                    $(this).on('click', function(e) {
+                        e.preventDefault();
+                        return false;
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

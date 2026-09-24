@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>View Booking - Admin</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <style>
+        .booking-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .booking-header {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .booking-details {
+            margin-bottom: 20px;
+        }
+        .booking-section {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section-title {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .seat-tag {
+            background-color: #e9ecef;
+            border-radius: 3px;
+            padding: 2px 8px;
+            font-size: 14px;
+            margin-right: 5px;
+            margin-bottom: 5px;
+            display: inline-block;
+        }
+        .status-badge {
+            font-size: 100%;
+            padding: 5px 10px;
+        }
+        .admin-actions {
+            margin-top: 20px;
+        }
+        .user-info {
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .warning-badge {
+            background-color: #dc3545;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            margin-left: 5px;
+        }
+        .verification-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">Movie Ticket Booking System - Admin</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/movies}">Movies</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/screenings}">Screenings</a>
+                    </li>
+                    <li class="nav-item active">
+                        <a class="nav-link" th:href="@{/admin/bookings}">Bookings</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/users}">Users</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/logout}">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container booking-container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Booking Details</h2>
+            <a th:href="@{/admin/bookings}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Bookings
+            </a>
+        </div>
+        
+        <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
+        
+        <!-- Verification information -->
+        <div class="verification-info">
+            <strong>Booking Verification:</strong>
+            <p>ID: <span th:text="${booking.id}"></span>, 
+               Confirmation Code: <span th:text="${booking.confirmationCode}"></span>,
+               Customer: <span th:text="${booking.user.firstName + ' ' + booking.user.lastName}"></span>
+            </p>
+        </div>
+        
+        <div class="booking-header">
+            <div class="row">
+                <div class="col-md-6">
+                    <h4>Confirmation Code: <span th:text="${booking.confirmationCode}">ABC123</span></h4>
+                    <p class="mb-0">Booking ID: <span th:text="${booking.id}">123</span></p>
+                    <p class="mb-0">Booking Date: <span th:text="${#temporals.format(booking.bookingTime, 'yyyy-MM-dd HH:mm')}">2023-01-01 12:00</span></p>
+                </div>
+                <div class="col-md-6 text-md-right">
+                    <span th:if="${booking.status == 'RESERVED'}" class="badge badge-warning status-badge">Reserved</span>
+                    <span th:if="${booking.status == 'CONFIRMED'}" class="badge badge-success status-badge">Paid</span>
+                    <span th:if="${booking.status == 'CANCELLED'}" class="badge badge-danger status-badge">Cancelled</span>
+                    <span th:if="${booking.status == 'NO_SHOW'}" class="badge badge-dark status-badge">No-Show</span>
+                    <p class="mb-0 mt-2">Payment Status: 
+                        <span th:if="${booking.paid == false}" class="badge badge-warning">Unpaid</span>
+                        <span th:if="${booking.paid == true}" class="badge badge-success">Paid</span>
+                    </p>
+                    <p class="mb-0" th:if="${booking.paymentMethod != null}">
+                        Payment Method: 
+                        <span th:if="${booking.paymentMethod == 'CREDIT_CARD'}"><i class="fas fa-credit-card"></i> Credit Card</span>
+                        <span th:if="${booking.paymentMethod == 'GCASH'}"><i class="fas fa-mobile-alt"></i> GCash</span>
+                        <span th:if="${booking.paymentMethod == 'PAY_AT_COUNTER'}"><i class="fas fa-store"></i> Pay at Counter</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8">
+                <div class="booking-section">
+                    <h4 class="section-title">Movie Details</h4>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <img th:if="${booking.screening.movie.effectiveImageUrl != null}" th:src="${booking.screening.movie.effectiveImageUrl}" 
+                                 alt="Movie Poster" class="img-fluid rounded" style="max-height: 200px;">
+                            <img th:if="${booking.screening.movie.effectiveImageUrl == null}" src="/images/movie-placeholder.jpg" 
+                                 alt="Movie Poster" class="img-fluid rounded" style="max-height: 200px;">
+                        </div>
+                        <div class="col-md-8">
+                            <h5 th:text="${booking.screening.movie.title}">Movie Title</h5>
+                            <p><strong>Genre:</strong> <span th:text="${booking.screening.movie.genre}">Action</span></p>
+                            <p><strong>Duration:</strong> <span th:text="${booking.screening.movie.duration}">120</span> minutes</p>
+                            <p><strong>Cinema:</strong> <span th:text="${booking.screening.cinema.name}">Cinema 1</span></p>
+                            <p><strong>Screening Date:</strong> <span th:text="${#temporals.format(booking.screening.screeningTime.toLocalDate(), 'EEEE, MMMM d, yyyy')}">January 1, 2023</span></p>
+                            <p><strong>Screening Time:</strong> <span th:text="${#temporals.format(booking.screening.screeningTime.toLocalTime(), 'h:mm a')}">7:00 PM</span></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="booking-section">
+                    <h4 class="section-title">Seat Information</h4>
+                    <p><strong>Number of Seats:</strong> <span th:text="${booking.numberOfSeats}">2</span></p>
+                    <p><strong>Selected Seats:</strong></p>
+                    <div>
+                        <span class="seat-tag" th:each="seat : ${seats}" th:text="${seat.row + seat.seatColumn}">A1</span>
+                    </div>
+                    <p class="mt-3"><strong>Total Amount:</strong> ₱<span th:text="${#numbers.formatDecimal(booking.totalAmount, 0, 2)}">300.00</span></p>
+                </div>
+                <div class="booking-section" th:if="${payment != null}">
+                    <h4 class="section-title">Payment Information</h4>
+                    <p><strong>Transaction ID:</strong> <span th:text="${payment.transactionId}">TXN123456</span></p>
+                    <p><strong>Payment Date:</strong> <span th:text="${#temporals.format(payment.paymentDate, 'yyyy-MM-dd HH:mm')}">2023-01-01 12:30</span></p>
+                    <p><strong>Amount Paid:</strong> ₱<span th:text="${#numbers.formatDecimal(payment.amount, 0, 2)}">300.00</span></p>
+                    <p><strong>Payment Method:</strong> 
+                        <span th:if="${payment.paymentMethod == 'CREDIT_CARD'}"><i class="fas fa-credit-card"></i> Credit Card</span>
+                        <span th:if="${payment.paymentMethod == 'GCASH'}"><i class="fas fa-mobile-alt"></i> GCash</span>
+                        <span th:if="${payment.paymentMethod == 'PAY_AT_COUNTER'}"><i class="fas fa-store"></i> Pay at Counter</span>
+                    </p>
+                    <p th:if="${payment.cardNumber != null}"><strong>Card Number:</strong> <span th:text="${payment.cardNumber}">XXXX-XXXX-XXXX-1234</span></p>
+                    <p th:if="${payment.cardHolderName != null}"><strong>Card Holder:</strong> <span th:text="${payment.cardHolderName}">John Doe</span></p>
+                    <p th:if="${payment.gcashNumber != null}"><strong>GCash Number:</strong> <span th:text="${payment.gcashNumber}">09123456789</span></p>
+                    <p th:if="${payment.gcashName != null}"><strong>GCash Name:</strong> <span th:text="${payment.gcashName}">John Doe</span></p>
+                    <p th:if="${payment.paymentNotes != null}"><strong>Payment Notes:</strong> <span th:text="${payment.paymentNotes}">Payment processed at counter</span></p>
+                    <p th:if="${payment.processedBy != null}"><strong>Processed By:</strong> <span th:text="${payment.processedBy}">admin@example.com</span></p>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="user-info">
+                    <h4 class="section-title">Customer Information</h4>
+                    <p><strong>Name:</strong> <span th:text="${user.firstName + ' ' + user.lastName}">John Doe</span>
+                        <span th:if="${user.isBlocked}" class="warning-badge">BLOCKED</span>
+                        <span th:if="${!user.isBlocked && user.blockedUntil != null && user.blockedUntil.isAfter(T(java.time.LocalDateTime).now())}" 
+                              class="warning-badge">TEMP BLOCKED</span>
+                    </p>
+                    <p><strong>Email:</strong> <span th:text="${user.email}">john@example.com</span></p>
+                    <p><strong>Phone:</strong> <span th:text="${user.phone != null ? user.phone : 'Not provided'}">123-456-7890</span></p>
+                    <p><strong>No-Show Count:</strong> <span th:text="${user.noShowCount}">0</span></p>
+                    <p th:if="${user.blockedUntil != null}"><strong>Blocked Until:</strong> <span th:text="${#temporals.format(user.blockedUntil, 'yyyy-MM-dd')}">2023-01-08</span></p>
+                    <p th:if="${user.blockReason != null}"><strong>Block Reason:</strong> <span th:text="${user.blockReason}">Multiple no-shows</span></p>
+                    <a th:href="@{/admin/users/view/{id}(id=${user.id})}" class="btn btn-sm btn-outline-primary mt-2">
+                        <i class="fas fa-user"></i> View User Profile
+                    </a>
+                </div>
+                
+                <div class="booking-section">
+                    <h4 class="section-title">Admin Actions</h4>
+                    <form th:action="@{/admin/bookings/update-status/{id}(id=${booking.id})}" method="post">
+                        <div class="form-group">
+                            <label for="status">Update Status:</label>
+                            <select class="form-control" id="status" name="status">
+                                <option value="RESERVED" th:selected="${booking.status == 'RESERVED'}">Reserved (Unpaid)</option>
+                                <option value="CONFIRMED" th:selected="${booking.status == 'CONFIRMED'}">Paid</option>
+                                <option value="NO_SHOW" th:selected="${booking.status == 'NO_SHOW'}">No-Show</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="adminNotes">Admin Notes:</label>
+                            <textarea class="form-control" id="adminNotes" name="adminNotes" rows="3" th:text="${booking.adminNotes}"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Update Status
+                        </button>
+                    </form>
+                    
+                    <div class="mt-4">
+                        <a th:if="${booking.paymentMethod == 'PAY_AT_COUNTER' && booking.paid == false}" 
+                           th:href="@{/admin/bookings/process-payment/{id}(id=${booking.id})}" class="btn btn-success btn-block">
+                            <i class="fas fa-cash-register"></i> Process Counter Payment
+                        </a>
+                        
+                        <a th:href="@{/admin/bookings/cancel/{id}(id=${booking.id})}" 
+                           class="btn btn-danger btn-block mt-2"
+                           onclick="return confirm('Are you sure you want to cancel this booking?')">
+                            <i class="fas fa-times-circle"></i> Cancel Booking
+                        </a>
+                        
+                        <a th:if="${booking.status == 'CANCELLED'}" 
+                           th:href="@{/admin/bookings/delete/{id}(id=${booking.id})}" 
+                           class="btn btn-outline-danger btn-block mt-2"
+                           onclick="return confirm('Are you sure you want to delete this booking? This action cannot be undone.')">
+                            <i class="fas fa-trash-alt"></i> Delete Booking
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        // Function to update the form when status changes
+        document.addEventListener('DOMContentLoaded', function() {
+            var statusSelect = document.getElementById('status');
+            if (statusSelect) {
+                statusSelect.addEventListener('change', function() {
+                    // This will be handled by the controller
+                    // When CONFIRMED is selected, the controller will set paid=true
+                    // When RESERVED is selected, the controller will set paid=false
+                    // When NO_SHOW is selected, the controller will handle that status
+                });
+            }
+        });
+    </script>
+</body>
+</html>

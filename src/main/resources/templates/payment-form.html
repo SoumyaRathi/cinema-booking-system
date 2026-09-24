@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment - Movie Ticket Booking</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <style>
+        .payment-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .booking-summary {
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .payment-method {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+        .payment-method:hover {
+            border-color: #007bff;
+            background-color: #f0f7ff;
+        }
+        .payment-method-icon {
+            font-size: 24px;
+            margin-right: 10px;
+        }
+        .payment-details {
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
+        .total-amount {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .seat-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        .seat-tag {
+            background-color: #e9ecef;
+            border-radius: 3px;
+            padding: 2px 8px;
+            font-size: 14px;
+        }
+        .rules-box {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 4px;
+        }
+        .rules-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #856404;
+        }
+        .rules-list {
+            padding-left: 20px;
+            margin-bottom: 0;
+        }
+        .rules-list li {
+            margin-bottom: 8px;
+        }
+        .rules-list li:last-child {
+            margin-bottom: 0;
+        }
+        .warning-text {
+            color: #dc3545;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" th:href="@{/}">Movie Ticket Booking</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/movies}">Movies</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/cinemas}">Cinemas</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/bookings/my-bookings}">My Bookings</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/profile}">Profile</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/logout}">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container payment-container mt-4">
+        <h2 class="mb-4">Payment</h2>
+        
+        <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
+        <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
+        
+        <div class="booking-summary">
+            <h4>Booking Summary</h4>
+            <div class="row">
+                <div class="col-md-8">
+                    <p><strong>Movie:</strong> <span th:text="${movie.title}"></span></p>
+                    <p><strong>Cinema:</strong> <span th:text="${screening.cinema.name}"></span></p>
+                    <p><strong>Date:</strong> <span th:text="${#temporals.format(screening.screeningTime.toLocalDate(), 'EEEE, MMMM d, yyyy')}"></span></p>
+                    <p><strong>Time:</strong> <span th:text="${#temporals.format(screening.screeningTime.toLocalTime(), 'h:mm a')}"></span></p>
+                    <p><strong>Seats:</strong> 
+                        <span class="seat-list">
+                            <span class="seat-tag" th:each="seat : ${seats}" th:text="${seat.row + seat.seatColumn}"></span>
+                        </span>
+                    </p>
+                </div>
+                <div class="col-md-4 text-right">
+                    <p>Ticket Price: ₱<span th:text="${#numbers.formatDecimal(screening.price, 0, 2)}"></span> x <span th:text="${seats.size()}"></span></p>
+                    <p class="total-amount">Total: ₱<span th:text="${#numbers.formatDecimal(booking.totalAmount, 0, 2)}"></span></p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="payment-method">
+            <div class="d-flex align-items-center">
+                <span class="payment-method-icon"><i class="fas fa-store"></i></span>
+                <div>
+                    <h5>Pay at Counter</h5>
+                    <p class="mb-0 text-muted">Pay at the cinema counter before the show</p>
+                </div>
+            </div>
+            
+            <div class="payment-details">
+                <p>You will need to pay at the cinema counter at least 30 minutes before the show starts.</p>
+                <p>Please bring your booking confirmation code or show the email confirmation.</p>
+                <p class="warning-text">Important: Your reservation will expire if not paid 15 minutes before showtime.</p>
+            </div>
+        </div>
+        
+        <div class="rules-box">
+            <div class="rules-title">Pay at Counter Rules</div>
+            <ul class="rules-list">
+                <li>You must arrive at the cinema and pay at least 30 minutes before showtime.</li>
+                <li>If not paid 15 minutes before showtime, your booking will be automatically canceled, and seats will be released.</li>
+                <li>Repeated no-shows may result in temporary or permanent restrictions on your account.</li>
+                <li>First no-show: Warning notice</li>
+                <li>Second no-show: 7-day booking ban</li>
+                <li>Third no-show: Permanent block from online booking (must buy walk-in only)</li>
+            </ul>
+        </div>
+        
+        <form th:action="@{/bookings/process-payment}" method="post" id="paymentForm" class="mt-4">
+            <input type="hidden" name="bookingId" th:value="${booking.id}">
+            
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="fas fa-check-circle mr-1"></i> Confirm Booking
+                </button>
+                <a th:href="@{/bookings/my-bookings}" class="btn btn-secondary btn-lg ml-2">
+                    <i class="fas fa-times mr-1"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

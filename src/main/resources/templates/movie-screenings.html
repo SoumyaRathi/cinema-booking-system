@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${movie != null ? movie.title + ' - Screenings' : 'Movie Screenings'}">Movie Screenings</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .date-nav {
+            overflow-x: auto;
+            white-space: nowrap;
+            padding: 10px 0;
+            margin-bottom: 20px;
+        }
+        .date-nav .date-item {
+            display: inline-block;
+            text-align: center;
+            padding: 10px 15px;
+            margin-right: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            min-width: 100px;
+            transition: all 0.3s;
+        }
+        .date-nav .date-item:hover {
+            background-color: #f8f9fa;
+        }
+        .date-nav .date-item.active {
+            background-color: #007bff;
+            color: white;
+        }
+        .date-nav .date-item .day-name {
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        .date-nav .date-item .date-number {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .date-nav .date-item .month {
+            font-size: 0.8rem;
+        }
+        .movie-poster {
+            height: 300px;
+            object-fit: cover;
+        }
+        .time-slot {
+            display: inline-block;
+            margin: 5px;
+            padding: 10px 15px;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            color: #333;
+        }
+        .time-slot:hover {
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+        }
+        .time-slot.sold-out {
+            background-color: #e9ecef;
+            color: #adb5bd;
+            cursor: not-allowed;
+            text-decoration: line-through;
+        }
+        .cinema-name {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .date-section {
+            margin-bottom: 40px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" th:href="@{/}">Movie Ticket Booking</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/movies}">Movies</a>
+                    </li>
+                    <li class="nav-item active">
+                        <a class="nav-link" th:href="@{/screenings}">Screenings</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/bookings/my-bookings}">My Bookings</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/profile}">My Profile</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/logout}">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Success and Error Messages -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${success}"></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${error}"></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        
+        <!-- Movie Details -->
+        <div th:if="${movie != null}" class="movie-details">
+            <div class="row">
+                <div class="col-md-4">
+                    <img th:if="${movie.imageUrl != null && !movie.imageUrl.isEmpty()}" 
+                         th:src="${movie.imageUrl}" 
+                         class="movie-poster img-fluid" 
+                         th:alt="${movie.title}">
+                    <div th:unless="${movie.imageUrl != null && !movie.imageUrl.isEmpty()}" 
+                         class="movie-poster d-flex justify-content-center align-items-center bg-light">
+                        <i class="fas fa-film fa-5x text-muted"></i>
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <h1 th:text="${movie.title}">Movie Title</h1>
+                    <p class="text-muted">
+                        <span th:if="${movie.duration != null}" th:text="${movie.duration + ' min'}">120 min</span>
+                        <span th:if="${movie.genre != null && !movie.genre.isEmpty()}" th:text="${' | ' + movie.genre}"> | Action</span>
+                    </p>
+                    <p th:if="${movie.description != null}" th:text="${movie.description}">Movie description goes here...</p>
+                    
+                    <div th:if="${movie.director != null && !movie.director.isEmpty()}">
+                        <strong>Director:</strong> <span th:text="${movie.director}">Director Name</span>
+                    </div>
+                    
+                    <div th:if="${movie.cast != null && !movie.cast.isEmpty()}">
+                        <strong>Cast:</strong> <span th:text="${movie.cast}">Actor 1, Actor 2, Actor 3</span>
+                    </div>
+                    
+                    <div class="mt-3" th:if="${movie.trailerUrl != null && !movie.trailerUrl.isEmpty()}">
+                        <a th:href="${movie.trailerUrl}" target="_blank" class="btn btn-outline-secondary">
+                            <i class="fas fa-play-circle"></i> Watch Trailer
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <h2 class="mb-4" th:text="${movie != null ? 'Screenings for ' + movie.title : 'Movie Screenings'}">Screenings</h2>
+        
+        <!-- Date Navigation - Only show if today is not null -->
+        <div th:if="${today != null}" class="date-nav">
+            <div th:each="i : ${#numbers.sequence(0, 6)}" 
+                 th:with="currentDate=${today.plusDays(i)}"
+                 th:class="${i == 0 ? 'date-item active' : 'date-item'}"
+                 th:attr="data-date=${#temporals.format(currentDate, 'yyyy-MM-dd')}">
+                <div class="day-name" th:text="${#temporals.format(currentDate, 'EEE')}">Mon</div>
+                <div class="date-number" th:text="${#temporals.format(currentDate, 'd')}">1</div>
+                <div class="month" th:text="${#temporals.format(currentDate, 'MMM')}">Jan</div>
+            </div>
+        </div>
+        
+        <!-- No screenings message -->
+        <div th:if="${screenings == null || screenings.isEmpty()}" class="alert alert-info">
+            <i class="fas fa-info-circle"></i> No screenings available for this movie. Please check back later.
+        </div>
+        
+        <!-- Screenings by Date -->
+        <div th:unless="${screenings == null || screenings.isEmpty()}">
+            <div th:if="${screeningsByDate != null}" th:each="dateEntry : ${screeningsByDate}" 
+                 th:class="${dateEntry_index == 0 ? 'date-section active' : 'date-section'}"
+                 th:id="${'date-' + #temporals.format(dateEntry.key, 'yyyy-MM-dd')}">
+                <h3 class="mt-4 mb-3" th:text="${#temporals.format(dateEntry.key, 'EEEE, MMMM d, yyyy')}">Monday, January 1, 2023</h3>
+                
+                <!-- Use the pre-processed data -->
+                <div th:if="${screeningsByCinema != null && screeningsByCinema.containsKey(dateEntry.key)}" 
+                     th:each="cinemaEntry : ${screeningsByCinema.get(dateEntry.key)}" class="mb-4">
+                    <div class="cinema-name" th:text="${cinemaEntry.key != null ? cinemaEntry.key.name : 'Unknown Cinema'}">Cinema Name</div>
+                    
+                    <div class="time-slots">
+                        <!-- Available screenings with seats -->
+                        <a th:each="screening : ${cinemaEntry.value}" 
+                           th:if="${screening.availableSeats > 0}"
+                           th:href="@{/bookings/screening/{id}(id=${screening.id})}"
+                           class="time-slot"
+                           th:title="${screening.availableSeats + ' seats available'}">
+                            <span th:text="${#temporals.format(screening.screeningTime, 'h:mm a')}">2:00 PM</span>
+                            <small th:if="${screening.theater != null}" th:text="${' - ' + screening.theater}"> - Theater 1</small>
+                        </a>
+                        
+                        <!-- Sold out screenings -->
+                        <span th:each="screening : ${cinemaEntry.value}" 
+                              th:if="${screening.availableSeats <= 0}"
+                              class="time-slot sold-out"
+                              title="Sold out">
+                            <span th:text="${#temporals.format(screening.screeningTime, 'h:mm a')}">2:00 PM</span>
+                            <small th:if="${screening.theater != null}" th:text="${' - ' + screening.theater}"> - Theater 1</small>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="bg-dark text-white mt-5 py-3">
+        <div class="container text-center">
+            <p class="mb-0">&copy; 2023 Movie Ticket Booking System. All rights reserved.</p>
+        </div>
+    </footer>
+    
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script th:src="@{/js/script.js}"></script>
+    <script>
+        // Auto-dismiss alerts after 5 seconds
+        $(document).ready(function() {
+            setTimeout(function() {
+                $('.alert').alert('close');
+            }, 5000);
+            
+            // Handle date navigation
+            $('.date-item').click(function() {
+                // Remove active class from all date items
+                $('.date-item').removeClass('active');
+                // Add active class to clicked date item
+                $(this).addClass('active');
+                
+                // Get the date from data attribute
+                var dateStr = $(this).data('date');
+                // Scroll to the corresponding date section
+                var dateId = 'date-' + dateStr;
+                var element = document.getElementById(dateId);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
